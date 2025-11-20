@@ -38,29 +38,24 @@ public class ReportManager {
     }
 
     public void printRoomDetails(int roomNumber) {
-        Room room = roomManager.findRoom(roomNumber);
-        if (room != null) {
+        roomManager.findRoomOptional(roomNumber).ifPresentOrElse(room -> {
             System.out.println("===== ROOM DETAILS =====");
             System.out.println(room);
             System.out.println("Recent guests:");
             room.getStayHistory().forEach(System.out::println);
-        } else {
-            System.out.println("Room " + roomNumber + " not found.");
-        }
+        }, () -> System.out.println("Room " + roomNumber + " not found."));
     }
 
     public void printRoomHistory(int roomNumber) {
-        Room room = roomManager.findRoom(roomNumber);
-        if (room == null) {
-            System.out.println("Room " + roomNumber + " not found.");
-            return;
-        }
-        System.out.println("Last 3 guests of room " + roomNumber + ":");
-        room.getStayHistory().forEach(System.out::println);
+        roomManager.findRoomOptional(roomNumber).ifPresentOrElse(room -> {
+            System.out.println("Last 3 guests of room " + roomNumber + ":");
+            room.getStayHistory().forEach(System.out::println);
+        }, () -> System.out.println("Room " + roomNumber + " not found."));
     }
 
     public void printAllPrices() {
         System.out.println("===== PRICES =====");
+
         System.out.println("--- Rooms ---");
         roomManager.getAllRooms().stream()
                 .sorted(SortUtils.byRoomPrice())

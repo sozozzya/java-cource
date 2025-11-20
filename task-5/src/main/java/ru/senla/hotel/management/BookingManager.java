@@ -20,76 +20,64 @@ public class BookingManager {
     }
 
     public void checkIn(Guest guest, int roomNumber, LocalDate checkIn, LocalDate checkOut) {
-        Room room = roomManager.findRoom(roomNumber);
-        if (room == null) {
-            System.out.println("Room " + roomNumber + " not found.");
-            return;
-        }
+        roomManager.findRoomOptional(roomNumber).ifPresentOrElse(room -> {
+            if (room.isUnderMaintenance()) {
+                System.out.println("Cannot check in. Room " + roomNumber + " is under maintenance.");
+                return;
+            }
+            if (room.isOccupied()) {
+                System.out.println("Cannot check in. Room " + roomNumber + " is already occupied.");
+                return;
+            }
+            if (checkOut.isBefore(checkIn)) {
+                System.out.println("Invalid dates: check-out (" + checkOut + ") cannot be before check-in (" + checkIn + ").");
+                return;
+            }
 
-        if (room.isUnderMaintenance()) {
-            System.out.println("Cannot check in. Room " + roomNumber + " is under maintenance.");
-            return;
-        }
-        if (room.isOccupied()) {
-            System.out.println("Cannot check in. Room " + roomNumber + " is already occupied.");
-            return;
-        }
-        if (checkOut.isBefore(checkIn)) {
-            System.out.println("Invalid dates: check-out (" + checkOut + ") cannot be before check-in (" + checkIn + ").");
-            return;
-        }
-
-        if (room.occupy(guest, checkIn, checkOut)) {
-            guest.setCheckInDate(checkIn);
-            guest.setCheckOutDate(checkOut);
-            bookings.add(new Booking(guest, room, checkIn, checkOut));
-            System.out.println(guest.getName() +
-                    " checked into room " + roomNumber +
-                    " " + checkIn +
-                    " and will check out " + checkOut + ".");
-        } else {
-            System.out.println("Check-in failed for room " + roomNumber + ".");
-        }
+            if (room.occupy(guest, checkIn, checkOut)) {
+                guest.setCheckInDate(checkIn);
+                guest.setCheckOutDate(checkOut);
+                bookings.add(new Booking(guest, room, checkIn, checkOut));
+                System.out.println(guest.getName() +
+                        " checked into room " + roomNumber +
+                        " " + checkIn +
+                        " and will check out " + checkOut + ".");
+            } else {
+                System.out.println("Check-in failed for room " + roomNumber + ".");
+            }
+        }, () -> System.out.println("Room " + roomNumber + " not found."));
     }
 
     public void checkOut(int roomNumber) {
-        Room room = roomManager.findRoom(roomNumber);
-        if (room == null) {
-            System.out.println("Room " + roomNumber + " not found.");
-            return;
-        }
+        roomManager.findRoomOptional(roomNumber).ifPresentOrElse(room -> {
+            if (!room.isOccupied()) {
+                System.out.println("Room " + roomNumber + " is already vacant.");
+                return;
+            }
 
-        if (!room.isOccupied()) {
-            System.out.println("Room " + roomNumber + " is already vacant.");
-            return;
-        }
+            Guest guest = room.getCurrentGuest();
 
-        Guest guest = room.getCurrentGuest();
-
-        if (room.vacate()) {
-            System.out.println(guest.getName() + " checked out from room " + roomNumber + ".");
-        } else {
-            System.out.println("Failed to check out from room " + roomNumber + ".");
-        }
+            if (room.vacate()) {
+                System.out.println(guest.getName() + " checked out from room " + roomNumber + ".");
+            } else {
+                System.out.println("Failed to check out from room " + roomNumber + ".");
+            }
+        }, () -> System.out.println("Room " + roomNumber + " not found."));
     }
 
     public void assignServiceToGuest(Guest guest, String serviceName, LocalDate date) {
-        Service baseService = serviceManager.findServiceByName(serviceName);
-        if (baseService == null) {
-            System.out.println("Service " + serviceName + " not found.");
-            return;
-        }
+        serviceManager.findServiceOptional(serviceName).ifPresentOrElse(baseService -> {
+            Service datedService = new Service(baseService.getName(), baseService.getPrice(), date);
 
-        Service datedService = new Service(baseService.getName(), baseService.getPrice(), date);
-
-        Booking activeBooking = findActiveBookingForGuest(guest);
-        if (activeBooking != null) {
-            activeBooking.addService(datedService);
-            System.out.println(guest.getName() + " has booked "
-                    + serviceName + " (" + baseService.getPrice() + "₽) on " + date + ".");
-        } else {
-            System.out.println("No active booking found for " + guest.getName() + ".");
-        }
+            Booking activeBooking = findActiveBookingForGuest(guest);
+            if (activeBooking != null) {
+                activeBooking.addService(datedService);
+                System.out.println(guest.getName() + " has booked "
+                        + serviceName + " (" + baseService.getPrice() + "₽) on " + date + ".");
+            } else {
+                System.out.println("No active booking found for " + guest.getName() + ".");
+            }
+        }, () -> System.out.println("Service " + serviceName + " not found."));
     }
 
     public List<Guest> getCurrentGuests() {

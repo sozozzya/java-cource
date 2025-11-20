@@ -1,11 +1,12 @@
 package ru.senla.hotel.ui.menu;
 
-import java.util.Stack;
+import java.util.ArrayDeque;
+import java.util.Deque;
+import java.util.List;
 
 public class Navigator {
-
     private Menu currentMenu;
-    private final Stack<Menu> history = new Stack<>();
+    private final Deque<Menu> history = new ArrayDeque<>();
 
     public Navigator(Menu rootMenu) {
         this.currentMenu = rootMenu;
@@ -13,23 +14,22 @@ public class Navigator {
 
     public void printMenu() {
         System.out.println("\n=== " + currentMenu.getName() + " ===");
-        MenuItem[] items = currentMenu.getMenuItems();
-        for (int i = 0; i < items.length; i++) {
-            System.out.println((i + 1) + ". " + items[i].getTitle());
+        List<MenuItem> items = currentMenu.getMenuItems();
+        for (int i = 0; i < items.size(); i++) {
+            System.out.println((i + 1) + ". " + items.get(i).getTitle());
         }
         System.out.print("Select option (number): ");
     }
 
     public void navigate(int index) {
-        MenuItem[] items = currentMenu.getMenuItems();
+        List<MenuItem> items = currentMenu.getMenuItems();
 
-        if (index < 1 || index > items.length) {
+        if (index < 1 || index > items.size()) {
             System.out.println("Invalid selection.");
             return;
         }
 
-        MenuItem item = items[index - 1];
-
+        MenuItem item = items.get(index - 1);
         item.doAction();
 
         if (item.isBack()) {

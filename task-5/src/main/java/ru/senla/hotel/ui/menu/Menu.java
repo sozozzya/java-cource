@@ -1,19 +1,22 @@
 package ru.senla.hotel.ui.menu;
 
+import java.util.Collections;
+import java.util.List;
+
 public class Menu {
     private final String name;
-    private final MenuItem[] menuItems;
+    private final List<MenuItem> menuItems;
 
-    public Menu(String name, MenuItem[] items) {
+    public Menu(String name, List<MenuItem> items) {
         this.name = name;
-        this.menuItems = items;
+        this.menuItems = Collections.unmodifiableList(items);
     }
 
     public String getName() {
         return name;
     }
 
-    public MenuItem[] getMenuItems() {
+    public List<MenuItem> getMenuItems() {
         return menuItems;
     }
 }

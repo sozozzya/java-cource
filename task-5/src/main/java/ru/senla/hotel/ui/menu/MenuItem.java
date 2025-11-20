@@ -1,5 +1,7 @@
 package ru.senla.hotel.ui.menu;
 
+import java.util.Optional;
+
 public class MenuItem {
     private final String title;
     private final IAction action;
@@ -34,9 +36,7 @@ public class MenuItem {
     }
 
     public void doAction() {
-        if (action != null) {
-            action.execute();
-        }
+        Optional.ofNullable(action).ifPresent(IAction::execute);
     }
 }
 

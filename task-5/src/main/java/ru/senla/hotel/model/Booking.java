@@ -3,7 +3,9 @@ package ru.senla.hotel.model;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class Booking {
     private final Guest guest;
@@ -32,7 +34,7 @@ public class Booking {
     }
 
     public List<Service> getServices() {
-        return services;
+        return Collections.unmodifiableList(services);
     }
 
     public void addService(Service service) {
@@ -41,7 +43,7 @@ public class Booking {
 
     public long getStayDuration() {
         long days = ChronoUnit.DAYS.between(checkInDate, checkOutDate);
-        return (days <= 0) ? 1 : days;
+        return Math.max(days, 1);
     }
 
     public double calculateTotalRoomCost() {
@@ -58,30 +60,20 @@ public class Booking {
 
     @Override
     public String toString() {
-        StringBuilder sb = new StringBuilder();
-        sb.append("Booking Summary\n");
-        sb.append("• Guest: ").append(guest.getName()).append("\n");
-        sb.append("• Room: #").append(room.getNumber()).append(")\n");
-        sb.append("• Check-in: ").append(checkInDate).append("\n");
-        sb.append("• Check-out: ").append(checkOutDate).append("\n");
+        String serviceList = services.isEmpty()
+                ? "none"
+                : services.stream()
+                .map(Service::getName)
+                .collect(Collectors.joining(", "));
 
-        if (!services.isEmpty()) {
-            sb.append("• Services: ");
-            for (int i = 0; i < services.size(); i++) {
-                sb.append(services.get(i).getName());
-                if (i < services.size() - 1) {
-                    sb.append(", ");
-                }
-            }
-            sb.append("\n");
-        } else {
-            sb.append("• Services: none\n");
-        }
-
-        sb.append(String.format("• Room cost: %.2f₽\n", calculateTotalRoomCost()));
-        sb.append(String.format("• Services cost: %.2f₽\n", calculateTotalServicesCost()));
-        sb.append(String.format("• Total cost: %.2f₽\n", calculateTotalCost()));
-
-        return sb.toString();
+        return "Booking Summary\n" +
+                "• Guest: " + guest.getName() + "\n" +
+                "• Room: #" + room.getNumber() + ")\n" +
+                "• Check-in: " + checkInDate + "\n" +
+                "• Check-out: " + checkOutDate + "\n" +
+                "• Services: " + serviceList + "\n" +
+                String.format("• Room cost: %.2f₽\n", calculateTotalRoomCost()) +
+                String.format("• Services cost: %.2f₽\n", calculateTotalServicesCost()) +
+                String.format("• Total cost: %.2f₽\n", calculateTotalCost());
     }
 }

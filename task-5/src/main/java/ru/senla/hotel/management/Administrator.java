@@ -15,8 +15,23 @@ public class Administrator {
         roomManager.addRoom(room);
     }
 
+    public void setRoomMaintenance(int roomNumber, boolean status) {
+        roomManager.setRoomMaintenance(roomNumber, status);
+    }
+
+    public void changeRoomPrice(int roomNumber, double newPrice) {
+        roomManager.findRoomOptional(roomNumber)
+                .ifPresentOrElse(room -> priceManager.changeRoomPrice(room, newPrice),
+                        () -> System.out.println("Room " + roomNumber + " not found."));
+    }
+
     public void addService(Service service) {
         serviceManager.addService(service);
+    }
+
+    public void changeServicePrice(String serviceName, double newPrice) {
+        serviceManager.findServiceOptional(serviceName).ifPresentOrElse(service -> priceManager.changeServicePrice(service, newPrice),
+                () -> System.out.println("Service " + serviceName + " not found."));
     }
 
     public void checkIn(Guest guest, int roomNumber, LocalDate checkIn, LocalDate checkOut) {
@@ -29,28 +44,6 @@ public class Administrator {
 
     public void assignServiceToGuest(Guest guest, String serviceName, LocalDate date) {
         bookingManager.assignServiceToGuest(guest, serviceName, date);
-    }
-
-    public void setRoomMaintenance(int roomNumber, boolean status) {
-        roomManager.setRoomMaintenance(roomNumber, status);
-    }
-
-    public void changeRoomPrice(int roomNumber, double newPrice) {
-        Room room = roomManager.findRoom(roomNumber);
-        if (room != null) {
-            priceManager.changeRoomPrice(room, newPrice);
-        } else {
-            System.out.println("Room " + roomNumber + " not found.");
-        }
-    }
-
-    public void changeServicePrice(String serviceName, double newPrice) {
-        Service service = serviceManager.findServiceByName(serviceName);
-        if (service != null) {
-            priceManager.changeServicePrice(service, newPrice);
-        } else {
-            System.out.println("Service " + serviceName + " not found.");
-        }
     }
 
     public void printAllRoomsByPrice() {
