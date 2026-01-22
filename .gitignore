@@ -1,4 +1,7 @@
-# Log file
+# ---------------------------------------
+# Base Java ignores
+# ---------------------------------------
+# Log files
 *.log
 
 # BlueJ files
@@ -16,6 +19,25 @@
 *.tar.gz
 *.rar
 
-# virtual machine crash logs, see http://www.java.com/en/download/help/error_hotspot.xml
+# JVM crash logs
 hs_err_pid*
 replay_pid*
+
+# ---------------------------------------
+# IntelliJ IDEA
+# ---------------------------------------
+.idea/
+*.iml
+
+# ---------------------------------------
+# Maven / Gradle build outputs
+# ---------------------------------------
+target/
+out/
+build/
+
+# ---------------------------------------
+# System files
+# ---------------------------------------
+.DS_Store
+Thumbs.db
