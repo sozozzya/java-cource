@@ -1,6 +1,13 @@
 package ru.senla.hotel.model;
 
-public class Guest implements Identifiable {
+import java.io.Serial;
+import java.io.Serializable;
+
+public class Guest implements Identifiable, Serializable {
+
+    @Serial
+    private static final long serialVersionUID = 1L;
+
     private Long id;
     private final String name;
 

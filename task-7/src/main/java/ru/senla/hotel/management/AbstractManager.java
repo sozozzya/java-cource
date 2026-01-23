@@ -42,4 +42,18 @@ public abstract class AbstractManager<T extends Identifiable> {
     public List<T> getAll() {
         return new ArrayList<>(storage.values());
     }
+
+    public List<T> exportState() {
+        return new ArrayList<>(storage.values());
+    }
+
+    public void importState(List<T> items) {
+        storage.clear();
+        nextId = 1L;
+        if (items != null) {
+            for (T item : items) {
+                save(item);
+            }
+        }
+    }
 }

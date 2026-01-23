@@ -67,4 +67,12 @@ public class GuestManager extends AbstractManager<Guest> {
             throw new GuestCsvException("Failed to import guests: " + e.getMessage());
         }
     }
+
+    public List<Guest> exportStateForAppState() {
+        return exportState();
+    }
+
+    public void importStateFromAppState(List<Guest> guests) {
+        importState(guests);
+    }
 }

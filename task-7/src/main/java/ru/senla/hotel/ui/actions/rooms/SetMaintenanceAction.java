@@ -15,9 +15,7 @@ public class SetMaintenanceAction implements IAction {
     @Override
     public void execute() {
         if (!admin.isRoomStatusChangeEnabled()) {
-            System.out.println(
-                    "Operation is not allowed: changing room maintenance status is disabled by configuration."
-            );
+            System.out.println("Operation is not allowed: changing room maintenance status is disabled by configuration.");
             return;
         }
 
@@ -25,11 +23,10 @@ public class SetMaintenanceAction implements IAction {
             ConsoleReader reader = ConsoleReader.getInstance();
 
             System.out.print("Enter room number: ");
-            int number = Integer.parseInt(reader.nextLine());
+            int number = reader.nextInt();
 
             System.out.print("Set maintenance? (yes/no): ");
-            String yn = reader.nextLine().trim().toLowerCase();
-            boolean status = yn.equals("yes") || yn.equals("y");
+            boolean status = reader.nextYesNo();
 
             admin.setRoomMaintenance(number, status);
             System.out.println("Maintenance status updated.");

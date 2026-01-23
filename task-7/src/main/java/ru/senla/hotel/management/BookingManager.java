@@ -203,6 +203,19 @@ public class BookingManager extends AbstractManager<Booking> {
                 .toList();
     }
 
+    private void addHistoryIfFinished(Booking booking) {
+        if (booking.getRoom() == null || booking.getGuest() == null) return;
+
+        if (booking.getCheckOutDate().isBefore(LocalDate.now())) {
+            booking.getRoom().addStayRecord(
+                    booking.getGuest().getName(),
+                    booking.getCheckInDate(),
+                    booking.getCheckOutDate(),
+                    config.getRoomHistorySize()
+            );
+        }
+    }
+
     public void exportBookingToCSV(String path) {
         if (path == null || path.isBlank()) {
             throw new GuestCsvException("CSV export path cannot be empty.");
@@ -236,44 +249,35 @@ public class BookingManager extends AbstractManager<Booking> {
                 Booking importedBooking = Booking.fromCsv(line);
                 save(importedBooking);
             }
-            resolveRelations();
+            resolveRelationsForAll();
         } catch (Exception e) {
             throw new BookingCsvException("Failed to import bookings: " + e.getMessage());
         }
     }
 
-    private void resolveRelations() {
-        storage.values().forEach(b -> {
-            resolveRelations(b);
-            addHistoryIfFinished(b);
-        });
+    public List<Booking> exportStateForAppState() {
+        return exportState();
     }
 
-    private void resolveRelations(Booking booking) {
-        guestManager.findById(booking.getGuestId())
-                .ifPresent(booking::attachGuest);
+    public void importStateFromAppState(List<Booking> bookings) {
+        importState(bookings);
+        resolveRelationsForAll();
+    }
 
-        roomManager.findById(booking.getRoomId())
-                .ifPresent(booking::attachRoom);
+    private void resolveRelationsForAll() {
+        storage.values().forEach(this::resolveRelationsForBooking);
+    }
+
+    private void resolveRelationsForBooking(Booking booking) {
+        guestManager.findById(booking.getGuestId()).ifPresent(booking::attachGuest);
+        roomManager.findById(booking.getRoomId()).ifPresent(booking::attachRoom);
 
         List<Service> services = booking.getServiceIds().stream()
                 .map(serviceManager::findById)
                 .flatMap(Optional::stream)
                 .toList();
-
         booking.attachServices(services);
-    }
 
-    private void addHistoryIfFinished(Booking booking) {
-        if (booking.getRoom() == null || booking.getGuest() == null) return;
-
-        if (booking.getCheckOutDate().isBefore(LocalDate.now())) {
-            booking.getRoom().addStayRecord(
-                    booking.getGuest().getName(),
-                    booking.getCheckInDate(),
-                    booking.getCheckOutDate(),
-                    config.getRoomHistorySize()
-            );
-        }
+        addHistoryIfFinished(booking);
     }
 }

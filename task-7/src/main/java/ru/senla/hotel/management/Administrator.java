@@ -3,11 +3,20 @@ package ru.senla.hotel.management;
 import ru.senla.hotel.config.ApplicationConfig;
 import ru.senla.hotel.config.ConfigLoader;
 import ru.senla.hotel.model.*;
+import ru.senla.hotel.storage.AppState;
+import ru.senla.hotel.storage.AppStateLoader;
+import ru.senla.hotel.storage.AppStateSaver;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.time.LocalDate;
 
 public class Administrator {
     ApplicationConfig config = ConfigLoader.load("application.properties");
+
+    private final AppStateLoader stateLoader = new AppStateLoader();
+    private final AppStateSaver stateSaver = new AppStateSaver();
 
     private final RoomManager roomManager = new RoomManager(config);
     private final ServiceManager serviceManager = new ServiceManager();
@@ -165,5 +174,31 @@ public class Administrator {
 
     public boolean isRoomStatusChangeEnabled() {
         return config.isRoomStatusChangeEnabled();
+    }
+
+    public void loadAppState() {
+        AppState state = stateLoader.load(config.getStateFilePath());
+
+        roomManager.importStateFromAppState(state.getRooms());
+        serviceManager.importStateFromAppState(state.getServices());
+        guestManager.importStateFromAppState(state.getGuests());
+        bookingManager.importStateFromAppState(state.getBookings());
+    }
+
+    public void saveAppState() {
+        AppState state = new AppState();
+        state.setRooms(roomManager.exportStateForAppState());
+        state.setGuests(guestManager.exportStateForAppState());
+        state.setServices(serviceManager.exportStateForAppState());
+        state.setBookings(bookingManager.exportStateForAppState());
+
+        Path path = config.getStateFilePath();
+        try {
+            Files.createDirectories(path.getParent());
+        } catch (IOException e) {
+            throw new RuntimeException("Failed to create directories for app state", e);
+        }
+
+        stateSaver.save(state, path);
     }
 }

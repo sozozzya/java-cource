@@ -34,9 +34,13 @@ public class ConfigLoader {
                         props.getProperty("room.history.size", "3")
                 );
 
+        String stateFilePath =
+                props.getProperty("app.state.file", "data/app-state.ser");
+
         return new ApplicationConfig(
                 roomStatusEnabled,
-                historySize
+                historySize,
+                stateFilePath
         );
     }
 }

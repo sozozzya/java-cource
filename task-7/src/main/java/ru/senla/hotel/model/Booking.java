@@ -2,6 +2,8 @@ package ru.senla.hotel.model;
 
 import ru.senla.hotel.exception.booking.InvalidBookingDatesException;
 
+import java.io.Serial;
+import java.io.Serializable;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
@@ -9,7 +11,11 @@ import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public class Booking implements Identifiable {
+public class Booking implements Identifiable, Serializable {
+
+    @Serial
+    private static final long serialVersionUID = 1L;
+
     private Long id;
 
     private Guest guest;

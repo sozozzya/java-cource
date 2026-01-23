@@ -83,4 +83,12 @@ public class ServiceManager extends AbstractManager<Service> {
             throw new ServiceCsvException("Failed to import services: " + e.getMessage());
         }
     }
+
+    public List<Service> exportStateForAppState() {
+        return exportState();
+    }
+
+    public void importStateFromAppState(List<Service> services) {
+        importState(services);
+    }
 }

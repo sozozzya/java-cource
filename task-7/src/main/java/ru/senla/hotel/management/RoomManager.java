@@ -5,6 +5,7 @@ import ru.senla.hotel.exception.FeatureDisabledException;
 import ru.senla.hotel.exception.guest.GuestCsvException;
 import ru.senla.hotel.exception.room.*;
 import ru.senla.hotel.model.Room;
+import ru.senla.hotel.model.StayRecord;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -119,5 +120,13 @@ public class RoomManager extends AbstractManager<Room> {
         } catch (Exception e) {
             throw new RoomCsvException("Failed to import rooms: " + e.getMessage());
         }
+    }
+
+    public List<Room> exportStateForAppState() {
+        return exportState();
+    }
+
+    public void importStateFromAppState(List<Room> rooms) {
+        importState(rooms);
     }
 }

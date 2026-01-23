@@ -1,8 +1,14 @@
 package ru.senla.hotel.model;
 
+import java.io.Serial;
+import java.io.Serializable;
 import java.time.LocalDate;
 
-public class Service implements Identifiable {
+public class Service implements Identifiable, Serializable {
+
+    @Serial
+    private static final long serialVersionUID = 1L;
+
     private Long id;
 
     private final String name;

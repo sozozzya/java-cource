@@ -1,9 +1,15 @@
 package ru.senla.hotel.model;
 
+import java.io.Serial;
+import java.io.Serializable;
 import java.time.LocalDate;
 import java.util.*;
 
-public class Room implements Identifiable {
+public class Room implements Identifiable, Serializable {
+
+    @Serial
+    private static final long serialVersionUID = 1L;
+
     private Long id;
 
     private final int number;
@@ -102,7 +108,7 @@ public class Room implements Identifiable {
         return "Room " + number +
                 " (ID=" + id + ")" +
                 " | Capacity: " + capacity +
-                " | " + stars + "★" +
+                " | " + stars + " ★" +
                 " | Price: " + pricePerNight +
                 " | Under maintenance: " + isUnderMaintenance;
     }
