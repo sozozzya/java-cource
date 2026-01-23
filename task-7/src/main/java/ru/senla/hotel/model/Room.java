@@ -56,12 +56,10 @@ public class Room implements Identifiable {
         return stayHistory;
     }
 
-    public void addStayRecord(String guestName,
-                              LocalDate checkIn,
-                              LocalDate checkOut) {
-
+    public void addStayRecord(String guestName, LocalDate checkIn, LocalDate checkOut, int maxHistorySize) {
         stayHistory.addFirst(new StayRecord(guestName, checkIn, checkOut));
-        if (stayHistory.size() > 3) {
+
+        while (stayHistory.size() > maxHistorySize) {
             stayHistory.removeLast();
         }
     }

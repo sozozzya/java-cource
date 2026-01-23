@@ -1,5 +1,7 @@
 package ru.senla.hotel.management;
 
+import ru.senla.hotel.config.ApplicationConfig;
+import ru.senla.hotel.exception.FeatureDisabledException;
 import ru.senla.hotel.exception.guest.GuestCsvException;
 import ru.senla.hotel.exception.room.*;
 import ru.senla.hotel.model.Room;
@@ -11,6 +13,11 @@ import java.io.PrintWriter;
 import java.util.*;
 
 public class RoomManager extends AbstractManager<Room> {
+    private final ApplicationConfig config;
+
+    public RoomManager(ApplicationConfig config) {
+        this.config = config;
+    }
 
     public void changeRoomPrice(int roomNumber, double newPrice) {
         if (newPrice < 0) {
@@ -54,6 +61,10 @@ public class RoomManager extends AbstractManager<Room> {
     }
 
     public void setRoomMaintenance(int roomNumber, boolean status, BookingManager bookingManager) {
+        if (!config.isRoomStatusChangeEnabled()) {
+            throw new FeatureDisabledException("Changing room maintenance status is disabled by configuration.");
+        }
+
         Room room = getRoomByNumber(roomNumber);
 
         if (!bookingManager.isRoomFreeNow(room)) {
@@ -63,7 +74,9 @@ public class RoomManager extends AbstractManager<Room> {
         if (room.isUnderMaintenance() == status) {
             throw new RoomMaintenanceException(
                     "Room " + roomNumber +
-                            (status ? " is already under maintenance." : " is not under maintenance.")
+                            (status
+                                    ? " is already under maintenance."
+                                    : " is not under maintenance.")
             );
         }
 

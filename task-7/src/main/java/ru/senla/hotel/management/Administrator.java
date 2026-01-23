@@ -1,15 +1,27 @@
 package ru.senla.hotel.management;
 
+import ru.senla.hotel.config.ApplicationConfig;
+import ru.senla.hotel.config.ConfigLoader;
 import ru.senla.hotel.model.*;
 
 import java.time.LocalDate;
 
 public class Administrator {
-    private final RoomManager roomManager = new RoomManager();
+    ApplicationConfig config = ConfigLoader.load("application.properties");
+
+    private final RoomManager roomManager = new RoomManager(config);
     private final ServiceManager serviceManager = new ServiceManager();
     private final GuestManager guestManager = new GuestManager();
-    private final BookingManager bookingManager = new BookingManager(roomManager, serviceManager, guestManager);
-    private final ReportManager reportManager = new ReportManager(bookingManager, serviceManager, roomManager);
+    private final BookingManager bookingManager = new BookingManager(
+            roomManager,
+            serviceManager,
+            guestManager,
+            config
+    );
+    private final ReportManager reportManager = new ReportManager(
+            bookingManager,
+            serviceManager,
+            roomManager);
 
     public void addRoom(Room room) {
         roomManager.save(room);
@@ -149,5 +161,9 @@ public class Administrator {
 
     public void importBookings(String path) {
         bookingManager.importBookingFromCSV(path);
+    }
+
+    public boolean isRoomStatusChangeEnabled() {
+        return config.isRoomStatusChangeEnabled();
     }
 }

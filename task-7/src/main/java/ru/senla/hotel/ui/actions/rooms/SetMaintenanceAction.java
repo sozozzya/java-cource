@@ -14,12 +14,19 @@ public class SetMaintenanceAction implements IAction {
 
     @Override
     public void execute() {
+        if (!admin.isRoomStatusChangeEnabled()) {
+            System.out.println(
+                    "Operation is not allowed: changing room maintenance status is disabled by configuration."
+            );
+            return;
+        }
+
         try {
             ConsoleReader reader = ConsoleReader.getInstance();
 
             System.out.print("Enter room number: ");
-            int number = reader.nextInt();
-            reader.nextLine();
+            int number = Integer.parseInt(reader.nextLine());
+
             System.out.print("Set maintenance? (yes/no): ");
             String yn = reader.nextLine().trim().toLowerCase();
             boolean status = yn.equals("yes") || yn.equals("y");

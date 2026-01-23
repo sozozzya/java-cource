@@ -1,5 +1,6 @@
 package ru.senla.hotel.management;
 
+import ru.senla.hotel.config.ApplicationConfig;
 import ru.senla.hotel.exception.booking.*;
 import ru.senla.hotel.exception.guest.GuestCsvException;
 import ru.senla.hotel.model.Booking;
@@ -19,13 +20,17 @@ public class BookingManager extends AbstractManager<Booking> {
     private final ServiceManager serviceManager;
     private final GuestManager guestManager;
 
+    private final ApplicationConfig config;
+
     public BookingManager(RoomManager roomManager,
                           ServiceManager serviceManager,
-                          GuestManager guestManager) {
+                          GuestManager guestManager,
+                          ApplicationConfig config) {
 
         this.roomManager = roomManager;
         this.serviceManager = serviceManager;
         this.guestManager = guestManager;
+        this.config = config;
     }
 
     public List<Booking> getActiveBookings() {
@@ -130,7 +135,8 @@ public class BookingManager extends AbstractManager<Booking> {
         booking.getRoom().addStayRecord(
                 booking.getGuest().getName(),
                 booking.getCheckInDate(),
-                today
+                today,
+                config.getRoomHistorySize()
         );
 
         booking.forceCheckOut(today);
@@ -265,7 +271,8 @@ public class BookingManager extends AbstractManager<Booking> {
             booking.getRoom().addStayRecord(
                     booking.getGuest().getName(),
                     booking.getCheckInDate(),
-                    booking.getCheckOutDate()
+                    booking.getCheckOutDate(),
+                    config.getRoomHistorySize()
             );
         }
     }
