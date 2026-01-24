@@ -203,17 +203,21 @@ public class BookingManager extends AbstractManager<Booking> {
                 .toList();
     }
 
-    private void addHistoryIfFinished(Booking booking) {
-        if (booking.getRoom() == null || booking.getGuest() == null) return;
+    public void updateRoomHistoryFromBookings() {
+        int maxHistorySize = config.getRoomHistorySize();
 
-        if (booking.getCheckOutDate().isBefore(LocalDate.now())) {
-            booking.getRoom().addStayRecord(
-                    booking.getGuest().getName(),
-                    booking.getCheckInDate(),
-                    booking.getCheckOutDate(),
-                    config.getRoomHistorySize()
-            );
-        }
+        roomManager.getAll().forEach(r -> r.getStayHistory().clear());
+
+        storage.values().stream()
+                .filter(b -> b.getRoom() != null && b.getGuest() != null)
+                .filter(b -> !b.getCheckOutDate().isAfter(LocalDate.now()))
+                .sorted(Comparator.comparing(Booking::getCheckOutDate).reversed())
+                .forEach(b -> b.getRoom().addStayRecord(
+                        b.getGuest().getName(),
+                        b.getCheckInDate(),
+                        b.getCheckOutDate(),
+                        maxHistorySize
+                ));
     }
 
     public void exportBookingToCSV(String path) {
@@ -250,6 +254,7 @@ public class BookingManager extends AbstractManager<Booking> {
                 save(importedBooking);
             }
             resolveRelationsForAll();
+            updateRoomHistoryFromBookings();
         } catch (Exception e) {
             throw new BookingCsvException("Failed to import bookings: " + e.getMessage());
         }
@@ -262,6 +267,7 @@ public class BookingManager extends AbstractManager<Booking> {
     public void importStateFromAppState(List<Booking> bookings) {
         importState(bookings);
         resolveRelationsForAll();
+        updateRoomHistoryFromBookings();
     }
 
     private void resolveRelationsForAll() {
@@ -277,7 +283,5 @@ public class BookingManager extends AbstractManager<Booking> {
                 .flatMap(Optional::stream)
                 .toList();
         booking.attachServices(services);
-
-        addHistoryIfFinished(booking);
     }
 }

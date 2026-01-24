@@ -1,7 +1,6 @@
 package ru.senla.hotel.management;
 
 import ru.senla.hotel.config.ApplicationConfig;
-import ru.senla.hotel.config.ConfigLoader;
 import ru.senla.hotel.model.*;
 import ru.senla.hotel.storage.AppState;
 import ru.senla.hotel.storage.AppStateLoader;
@@ -13,24 +12,35 @@ import java.nio.file.Path;
 import java.time.LocalDate;
 
 public class Administrator {
-    ApplicationConfig config = ConfigLoader.load("application.properties");
+    private final ApplicationConfig config;
 
     private final AppStateLoader stateLoader = new AppStateLoader();
     private final AppStateSaver stateSaver = new AppStateSaver();
 
-    private final RoomManager roomManager = new RoomManager(config);
-    private final ServiceManager serviceManager = new ServiceManager();
-    private final GuestManager guestManager = new GuestManager();
-    private final BookingManager bookingManager = new BookingManager(
-            roomManager,
-            serviceManager,
-            guestManager,
-            config
-    );
-    private final ReportManager reportManager = new ReportManager(
-            bookingManager,
-            serviceManager,
-            roomManager);
+    private final RoomManager roomManager;
+    private final ServiceManager serviceManager;
+    private final GuestManager guestManager;
+    private final BookingManager bookingManager;
+    private final ReportManager reportManager;
+
+    public Administrator(ApplicationConfig config) {
+        this.config = config;
+
+        this.roomManager = new RoomManager(config);
+        this.serviceManager = new ServiceManager();
+        this.guestManager = new GuestManager();
+        this.bookingManager = new BookingManager(
+                roomManager,
+                serviceManager,
+                guestManager,
+                config
+        );
+        this.reportManager = new ReportManager(
+                bookingManager,
+                serviceManager,
+                roomManager
+        );
+    }
 
     public void addRoom(Room room) {
         roomManager.save(room);

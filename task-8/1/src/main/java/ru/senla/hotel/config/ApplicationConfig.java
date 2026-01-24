@@ -1,28 +1,20 @@
 package ru.senla.hotel.config;
 
+import ru.senla.hotel.autoconfig.annotation.ConfigProperty;
+import ru.senla.hotel.autoconfig.converter.ConverterType;
+
 import java.nio.file.Path;
-import java.nio.file.Paths;
 
 public class ApplicationConfig {
 
-    private final boolean roomStatusChangeEnabled;
-    private final int roomHistorySize;
-    private final Path stateFilePath;
+    @ConfigProperty(propertyName = "room.status.change.enabled")
+    private boolean roomStatusChangeEnabled;
 
-    public ApplicationConfig(boolean roomStatusChangeEnabled,
-                             int roomHistorySize,
-                             String stateFilePath) {
-        if (roomHistorySize <= 0) {
-            throw new IllegalArgumentException("room.history.size must be > 0");
-        }
-        this.roomStatusChangeEnabled = roomStatusChangeEnabled;
-        this.roomHistorySize = roomHistorySize;
-        this.stateFilePath = Paths.get(stateFilePath);
-    }
+    @ConfigProperty(propertyName = "room.history.size")
+    private int roomHistorySize;
 
-    public Path getStateFilePath() {
-        return stateFilePath;
-    }
+    @ConfigProperty(propertyName = "app.state.file", type = ConverterType.PATH)
+    private Path stateFilePath;
 
     public boolean isRoomStatusChangeEnabled() {
         return roomStatusChangeEnabled;
@@ -30,5 +22,9 @@ public class ApplicationConfig {
 
     public int getRoomHistorySize() {
         return roomHistorySize;
+    }
+
+    public Path getStateFilePath() {
+        return stateFilePath;
     }
 }
