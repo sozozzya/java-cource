@@ -1,5 +1,8 @@
 package ru.senla.hotel.ui.actions.guests;
 
+import ru.senla.hotel.di.annotation.Component;
+import ru.senla.hotel.di.annotation.Inject;
+import ru.senla.hotel.di.annotation.Scope;
 import ru.senla.hotel.exception.guest.GuestException;
 import ru.senla.hotel.exception.service.ServiceException;
 import ru.senla.hotel.management.Administrator;
@@ -8,22 +11,24 @@ import ru.senla.hotel.ui.util.ConsoleReader;
 
 import java.time.LocalDate;
 
+@Component(scope = Scope.PROTOTYPE)
 public class AssignServiceToGuestAction implements IAction {
-    private final Administrator admin;
 
-    public AssignServiceToGuestAction(Administrator admin) {
-        this.admin = admin;
-    }
+    @Inject
+    private Administrator admin;
+
+    @Inject
+    private ConsoleReader reader;
 
     @Override
     public void execute() {
         try {
-            ConsoleReader reader = ConsoleReader.getInstance();
-
             System.out.print("Enter guest name: ");
             String guestName = reader.nextLine();
+
             System.out.print("Enter service name: ");
             String serviceName = reader.nextLine();
+
             System.out.print("Enter service date (YYYY-MM-DD): ");
             LocalDate date = LocalDate.parse(reader.nextLine());
 

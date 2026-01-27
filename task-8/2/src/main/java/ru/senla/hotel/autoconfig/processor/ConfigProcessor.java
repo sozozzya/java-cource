@@ -6,15 +6,19 @@ import ru.senla.hotel.autoconfig.converter.ConverterType;
 import ru.senla.hotel.autoconfig.source.ClasspathPropertiesSource;
 import ru.senla.hotel.autoconfig.source.PropertiesSource;
 import ru.senla.hotel.autoconfig.util.ReflectionUtils;
+import ru.senla.hotel.di.annotation.Component;
+import ru.senla.hotel.di.processor.BeanPostProcessor;
 
 import java.lang.reflect.Field;
 import java.nio.file.Path;
 
-public class ConfigProcessor {
+@Component
+public class ConfigProcessor implements BeanPostProcessor {
 
     private final ConverterRegistry converterRegistry = new ConverterRegistry();
 
-    public void configure(Object target) {
+    @Override
+    public void process(Object target) {
         Class<?> clazz = target.getClass();
 
         for (Field field : clazz.getDeclaredFields()) {

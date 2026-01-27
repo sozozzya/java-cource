@@ -1,6 +1,8 @@
 package ru.senla.hotel.management;
 
 import ru.senla.hotel.config.ApplicationConfig;
+import ru.senla.hotel.di.annotation.Component;
+import ru.senla.hotel.di.annotation.Inject;
 import ru.senla.hotel.exception.FeatureDisabledException;
 import ru.senla.hotel.exception.guest.GuestCsvException;
 import ru.senla.hotel.exception.room.*;
@@ -12,12 +14,10 @@ import java.io.FileReader;
 import java.io.PrintWriter;
 import java.util.*;
 
+@Component
 public class RoomManager extends AbstractManager<Room> {
-    private final ApplicationConfig config;
-
-    public RoomManager(ApplicationConfig config) {
-        this.config = config;
-    }
+    @Inject
+    private ApplicationConfig config;
 
     public void changeRoomPrice(int roomNumber, double newPrice) {
         if (newPrice < 0) {
@@ -38,17 +38,6 @@ public class RoomManager extends AbstractManager<Room> {
                 .orElseThrow(() -> new RoomNotFoundException(roomNumber));
     }
 
-    public List<Room> getAvailableRooms(BookingManager bookingManager) {
-        return storage.values().stream()
-                .filter(r -> !r.isUnderMaintenance())
-                .filter(bookingManager::isRoomFreeNow)
-                .toList();
-    }
-
-    public long countAvailableRooms(BookingManager bookingManager) {
-        return getAvailableRooms(bookingManager).size();
-    }
-
     public void addRoom(Room room) {
         boolean exists = storage.values().stream()
                 .anyMatch(r -> r.getNumber() == room.getNumber());
@@ -60,20 +49,16 @@ public class RoomManager extends AbstractManager<Room> {
         save(room);
     }
 
-    public void setRoomMaintenance(int roomNumber, boolean status, BookingManager bookingManager) {
+    public void setRoomMaintenance(int roomNumber, boolean status) {
         if (!config.isRoomStatusChangeEnabled()) {
             throw new FeatureDisabledException("Changing room maintenance status is disabled by configuration.");
         }
 
         Room room = getRoomByNumber(roomNumber);
 
-        if (!bookingManager.isRoomFreeNow(room)) {
-            throw new RoomOccupiedException(roomNumber);
-        }
-
         if (room.isUnderMaintenance() == status) {
             throw new RoomMaintenanceException(
-                    "Room " + roomNumber +
+                    "Room " + room.getNumber() +
                             (status
                                     ? " is already under maintenance."
                                     : " is not under maintenance.")

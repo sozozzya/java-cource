@@ -1,20 +1,12 @@
 package ru.senla.hotel.ui.util;
 
+import ru.senla.hotel.di.annotation.Component;
+
 import java.util.Scanner;
 
+@Component
 public class ConsoleReader {
-    private static ConsoleReader instance;
     private final Scanner scanner = new Scanner(System.in);
-
-    private ConsoleReader() {
-    }
-
-    public static ConsoleReader getInstance() {
-        if (instance == null) {
-            instance = new ConsoleReader();
-        }
-        return instance;
-    }
 
     public String nextLine() {
         return scanner.nextLine().trim();

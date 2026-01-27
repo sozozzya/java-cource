@@ -1,6 +1,8 @@
 package ru.senla.hotel.management;
 
 import ru.senla.hotel.config.ApplicationConfig;
+import ru.senla.hotel.di.annotation.Component;
+import ru.senla.hotel.di.annotation.Inject;
 import ru.senla.hotel.exception.booking.*;
 import ru.senla.hotel.exception.guest.GuestCsvException;
 import ru.senla.hotel.model.Booking;
@@ -15,23 +17,19 @@ import java.io.PrintWriter;
 import java.time.LocalDate;
 import java.util.*;
 
+@Component
 public class BookingManager extends AbstractManager<Booking> {
-    private final RoomManager roomManager;
-    private final ServiceManager serviceManager;
-    private final GuestManager guestManager;
+    @Inject
+    private RoomManager roomManager;
 
-    private final ApplicationConfig config;
+    @Inject
+    private ServiceManager serviceManager;
 
-    public BookingManager(RoomManager roomManager,
-                          ServiceManager serviceManager,
-                          GuestManager guestManager,
-                          ApplicationConfig config) {
+    @Inject
+    private GuestManager guestManager;
 
-        this.roomManager = roomManager;
-        this.serviceManager = serviceManager;
-        this.guestManager = guestManager;
-        this.config = config;
-    }
+    @Inject
+    private ApplicationConfig config;
 
     public List<Booking> getActiveBookings() {
         LocalDate today = LocalDate.now();
@@ -92,6 +90,17 @@ public class BookingManager extends AbstractManager<Booking> {
                         !b.getCheckOutDate().isBefore(today) &&
                                 !b.getCheckInDate().isAfter(today)
                 );
+    }
+
+    public List<Room> getAvailableRooms() {
+        return roomManager.getAll().stream()
+                .filter(r -> !r.isUnderMaintenance())
+                .filter(this::isRoomFreeNow)
+                .toList();
+    }
+
+    public long countAvailableRooms() {
+        return getAvailableRooms().size();
     }
 
     public void checkIn(String guestName,

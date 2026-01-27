@@ -1,5 +1,7 @@
 package ru.senla.hotel.management;
 
+import ru.senla.hotel.di.annotation.Component;
+import ru.senla.hotel.di.annotation.Inject;
 import ru.senla.hotel.model.Booking;
 import ru.senla.hotel.model.Room;
 import ru.senla.hotel.model.Service;
@@ -7,16 +9,16 @@ import ru.senla.hotel.model.Service;
 import java.time.LocalDate;
 import java.util.*;
 
+@Component
 public class ReportManager {
-    private final BookingManager bookingManager;
-    private final RoomManager roomManager;
-    private final ServiceManager serviceManager;
+    @Inject
+    private BookingManager bookingManager;
 
-    public ReportManager(BookingManager bookingManager, ServiceManager serviceManager, RoomManager roomManager) {
-        this.bookingManager = bookingManager;
-        this.serviceManager = serviceManager;
-        this.roomManager = roomManager;
-    }
+    @Inject
+    private RoomManager roomManager;
+
+    @Inject
+    private ServiceManager serviceManager;
 
     public void printAllRooms(Comparator<Room> comparator) {
         System.out.println("===== ROOM LIST =====");
@@ -25,13 +27,14 @@ public class ReportManager {
 
     public void printAvailableRooms(Comparator<Room> comparator) {
         System.out.println("===== AVAILABLE ROOMS =====");
-        roomManager.getAvailableRooms(bookingManager).stream()
+        bookingManager.getAvailableRooms()
+                .stream()
                 .sorted(comparator)
                 .forEach(System.out::println);
     }
 
     public void printAvailableRoomsCount() {
-        System.out.println("Free rooms: " + roomManager.countAvailableRooms(bookingManager));
+        System.out.println("Free rooms: " + bookingManager.countAvailableRooms());
     }
 
     public void printRoomsFreeByDate(LocalDate date) {

@@ -1,5 +1,6 @@
 package ru.senla.hotel.management;
 
+import ru.senla.hotel.di.annotation.Component;
 import ru.senla.hotel.exception.guest.GuestCsvException;
 import ru.senla.hotel.exception.service.InvalidServicePriceException;
 import ru.senla.hotel.exception.service.ServiceAlreadyExistsException;
@@ -13,6 +14,7 @@ import java.io.FileReader;
 import java.io.PrintWriter;
 import java.util.*;
 
+@Component
 public class ServiceManager extends AbstractManager<Service> {
 
     public void changeServicePrice(String serviceName, double newPrice) {

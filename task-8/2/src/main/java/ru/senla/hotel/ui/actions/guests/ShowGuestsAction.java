@@ -1,14 +1,17 @@
 package ru.senla.hotel.ui.actions.guests;
 
+import ru.senla.hotel.di.annotation.Inject;
 import ru.senla.hotel.management.Administrator;
 import ru.senla.hotel.ui.menu.IAction;
 
 public class ShowGuestsAction implements IAction {
-    private final Administrator admin;
+
+    @Inject
+    private Administrator admin;
+
     private final String mode;
 
-    public ShowGuestsAction(Administrator admin, String mode) {
-        this.admin = admin;
+    public ShowGuestsAction(String mode) {
         this.mode = mode;
     }
 

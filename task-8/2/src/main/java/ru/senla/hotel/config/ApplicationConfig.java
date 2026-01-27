@@ -2,9 +2,11 @@ package ru.senla.hotel.config;
 
 import ru.senla.hotel.autoconfig.annotation.ConfigProperty;
 import ru.senla.hotel.autoconfig.converter.ConverterType;
+import ru.senla.hotel.di.annotation.Component;
 
 import java.nio.file.Path;
 
+@Component
 public class ApplicationConfig {
 
     @ConfigProperty(propertyName = "room.status.change.enabled")

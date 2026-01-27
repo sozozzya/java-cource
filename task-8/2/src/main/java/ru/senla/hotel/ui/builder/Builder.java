@@ -1,14 +1,13 @@
 package ru.senla.hotel.ui.builder;
 
-import ru.senla.hotel.management.Administrator;
+import ru.senla.hotel.di.annotation.Component;
+import ru.senla.hotel.di.annotation.Inject;
 import ru.senla.hotel.ui.menu.Menu;
 
+@Component
 public class Builder {
-    private final ConsoleMenuFactory factory;
-
-    public Builder(Administrator admin) {
-        this.factory = new ConsoleMenuFactory(admin);
-    }
+    @Inject
+    private AbstractMenuFactory factory;
 
     public Menu buildRootMenu() {
         return factory.createRootMenu();

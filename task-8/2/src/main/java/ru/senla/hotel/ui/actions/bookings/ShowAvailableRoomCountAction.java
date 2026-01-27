@@ -1,14 +1,16 @@
 package ru.senla.hotel.ui.actions.bookings;
 
+import ru.senla.hotel.di.annotation.Component;
+import ru.senla.hotel.di.annotation.Inject;
+import ru.senla.hotel.di.annotation.Scope;
 import ru.senla.hotel.management.Administrator;
 import ru.senla.hotel.ui.menu.IAction;
 
+@Component(scope = Scope.PROTOTYPE)
 public class ShowAvailableRoomCountAction implements IAction {
-    private final Administrator admin;
 
-    public ShowAvailableRoomCountAction(Administrator admin) {
-        this.admin = admin;
-    }
+    @Inject
+    private Administrator admin;
 
     @Override
     public void execute() {

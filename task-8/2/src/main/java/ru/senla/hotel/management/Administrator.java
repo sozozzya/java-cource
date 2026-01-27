@@ -1,46 +1,37 @@
 package ru.senla.hotel.management;
 
 import ru.senla.hotel.config.ApplicationConfig;
+import ru.senla.hotel.di.annotation.Component;
+import ru.senla.hotel.di.annotation.Inject;
+import ru.senla.hotel.exception.room.RoomOccupiedException;
 import ru.senla.hotel.model.*;
 import ru.senla.hotel.storage.AppState;
-import ru.senla.hotel.storage.AppStateLoader;
-import ru.senla.hotel.storage.AppStateSaver;
+import ru.senla.hotel.storage.FileAppStateRepository;
 
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.time.LocalDate;
 
+@Component
 public class Administrator {
-    private final ApplicationConfig config;
+    @Inject
+    private ApplicationConfig config;
 
-    private final AppStateLoader stateLoader = new AppStateLoader();
-    private final AppStateSaver stateSaver = new AppStateSaver();
+    @Inject
+    private RoomManager roomManager;
 
-    private final RoomManager roomManager;
-    private final ServiceManager serviceManager;
-    private final GuestManager guestManager;
-    private final BookingManager bookingManager;
-    private final ReportManager reportManager;
+    @Inject
+    private ServiceManager serviceManager;
 
-    public Administrator(ApplicationConfig config) {
-        this.config = config;
+    @Inject
+    private GuestManager guestManager;
 
-        this.roomManager = new RoomManager(config);
-        this.serviceManager = new ServiceManager();
-        this.guestManager = new GuestManager();
-        this.bookingManager = new BookingManager(
-                roomManager,
-                serviceManager,
-                guestManager,
-                config
-        );
-        this.reportManager = new ReportManager(
-                bookingManager,
-                serviceManager,
-                roomManager
-        );
-    }
+    @Inject
+    private BookingManager bookingManager;
+
+    @Inject
+    private ReportManager reportManager;
+
+    @Inject
+    private FileAppStateRepository appStateRepository;
 
     public void addRoom(Room room) {
         roomManager.save(room);
@@ -55,7 +46,13 @@ public class Administrator {
     }
 
     public void setRoomMaintenance(int roomNumber, boolean status) {
-        roomManager.setRoomMaintenance(roomNumber, status, bookingManager);
+        Room room = roomManager.getRoomByNumber(roomNumber);
+
+        if (!bookingManager.isRoomFreeNow(room)) {
+            throw new RoomOccupiedException(roomNumber);
+        }
+
+        roomManager.setRoomMaintenance(roomNumber, status);
     }
 
     public void changeRoomPrice(int roomNumber, double newPrice) {
@@ -187,7 +184,7 @@ public class Administrator {
     }
 
     public void loadAppState() {
-        AppState state = stateLoader.load(config.getStateFilePath());
+        AppState state = appStateRepository.load();
 
         roomManager.importStateFromAppState(state.getRooms());
         serviceManager.importStateFromAppState(state.getServices());
@@ -197,18 +194,12 @@ public class Administrator {
 
     public void saveAppState() {
         AppState state = new AppState();
+
         state.setRooms(roomManager.exportStateForAppState());
         state.setGuests(guestManager.exportStateForAppState());
         state.setServices(serviceManager.exportStateForAppState());
         state.setBookings(bookingManager.exportStateForAppState());
 
-        Path path = config.getStateFilePath();
-        try {
-            Files.createDirectories(path.getParent());
-        } catch (IOException e) {
-            throw new RuntimeException("Failed to create directories for app state", e);
-        }
-
-        stateSaver.save(state, path);
+        appStateRepository.save(state);
     }
 }

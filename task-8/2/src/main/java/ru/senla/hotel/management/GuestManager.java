@@ -1,11 +1,13 @@
 package ru.senla.hotel.management;
 
+import ru.senla.hotel.di.annotation.Component;
 import ru.senla.hotel.exception.guest.*;
 import ru.senla.hotel.model.Guest;
 
 import java.io.*;
 import java.util.*;
 
+@Component
 public class GuestManager extends AbstractManager<Guest> {
 
     public Optional<Guest> findGuestByName(String name) {

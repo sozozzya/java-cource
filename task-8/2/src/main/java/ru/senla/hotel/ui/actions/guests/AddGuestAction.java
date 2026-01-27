@@ -1,26 +1,29 @@
 package ru.senla.hotel.ui.actions.guests;
 
+import ru.senla.hotel.di.annotation.Component;
+import ru.senla.hotel.di.annotation.Inject;
+import ru.senla.hotel.di.annotation.Scope;
 import ru.senla.hotel.exception.guest.GuestException;
 import ru.senla.hotel.management.Administrator;
 import ru.senla.hotel.model.Guest;
 import ru.senla.hotel.ui.menu.IAction;
 import ru.senla.hotel.ui.util.ConsoleReader;
 
+@Component(scope = Scope.PROTOTYPE)
 public class AddGuestAction implements IAction {
 
-    private final Administrator admin;
+    @Inject
+    private Administrator admin;
 
-    public AddGuestAction(Administrator admin) {
-        this.admin = admin;
-    }
+    @Inject
+    private ConsoleReader reader;
 
     @Override
     public void execute() {
         try {
-            ConsoleReader reader = ConsoleReader.getInstance();
-
             System.out.print("Enter guest name: ");
             String name = reader.nextLine();
+
             Guest guest = new Guest(null, name);
             admin.addGuest(guest);
 

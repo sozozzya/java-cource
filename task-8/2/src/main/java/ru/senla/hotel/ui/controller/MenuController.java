@@ -1,23 +1,28 @@
 package ru.senla.hotel.ui.controller;
 
-import ru.senla.hotel.management.Administrator;
+import ru.senla.hotel.di.annotation.Component;
+import ru.senla.hotel.di.annotation.Inject;
 import ru.senla.hotel.ui.builder.Builder;
 import ru.senla.hotel.ui.menu.Menu;
 import ru.senla.hotel.ui.menu.Navigator;
 import ru.senla.hotel.ui.util.ConsoleReader;
 
+@Component
 public class MenuController {
-    private final Navigator navigator;
 
-    public MenuController(Administrator admin) {
-        Builder builder = new Builder(admin);
-        Menu root = builder.buildRootMenu();
-        this.navigator = new Navigator(root);
-    }
+    @Inject
+    private Builder builder;
+
+    @Inject
+    private ConsoleReader reader;
+
+    private Navigator navigator;
 
     public void run() {
-        ConsoleReader reader = ConsoleReader.getInstance();
-
+        if (navigator == null) {
+            Menu root = builder.buildRootMenu();
+            this.navigator = new Navigator(root);
+        }
         while (true) {
             try {
                 navigator.printMenu();
