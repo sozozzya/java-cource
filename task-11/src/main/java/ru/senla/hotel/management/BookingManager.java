@@ -1,8 +1,14 @@
 package ru.senla.hotel.management;
 
 import ru.senla.hotel.config.ApplicationConfig;
+import ru.senla.hotel.dao.BookingDAO;
+import ru.senla.hotel.dao.GuestDAO;
+import ru.senla.hotel.dao.RoomDAO;
+import ru.senla.hotel.dao.ServiceDAO;
+import ru.senla.hotel.db.ConnectionManager;
 import ru.senla.hotel.di.annotation.Component;
 import ru.senla.hotel.di.annotation.Inject;
+import ru.senla.hotel.exception.DAOException;
 import ru.senla.hotel.exception.booking.*;
 import ru.senla.hotel.exception.guest.GuestCsvException;
 import ru.senla.hotel.model.Booking;
@@ -10,15 +16,26 @@ import ru.senla.hotel.model.Guest;
 import ru.senla.hotel.model.Room;
 import ru.senla.hotel.model.Service;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
-import java.io.PrintWriter;
+import java.io.*;
+import java.sql.Connection;
 import java.time.LocalDate;
 import java.util.*;
 
 @Component
-public class BookingManager extends AbstractManager<Booking> {
+public class BookingManager {
+
+    @Inject
+    private BookingDAO bookingDAO;
+
+    @Inject
+    private RoomDAO roomDAO;
+
+    @Inject
+    private GuestDAO guestDAO;
+
+    @Inject
+    private ServiceDAO serviceDAO;
+
     @Inject
     private RoomManager roomManager;
 
@@ -29,14 +46,13 @@ public class BookingManager extends AbstractManager<Booking> {
     private GuestManager guestManager;
 
     @Inject
+    private ConnectionManager connectionManager;
+
+    @Inject
     private ApplicationConfig config;
 
     public List<Booking> getActiveBookings() {
-        LocalDate today = LocalDate.now();
-        return storage.values().stream()
-                .filter(b -> !b.getCheckOutDate().isBefore(today))
-                .filter(b -> b.getGuest() != null && b.getRoom() != null)
-                .toList();
+        return bookingDAO.findActiveByDate(LocalDate.now());
     }
 
     public List<Guest> getCurrentGuests() {
@@ -58,12 +74,56 @@ public class BookingManager extends AbstractManager<Booking> {
         return start1.isBefore(end2) && start2.isBefore(end1);
     }
 
-    public void addBooking(Booking booking) {
-        if (booking.getGuest() == null || booking.getRoom() == null) {
-            throw new BookingException("Booking must have guest and room.") {
-            };
-        }
-        boolean conflict = storage.values().stream()
+    public boolean isRoomFreeNow(Room room) {
+        return bookingDAO
+                .findActiveByRoomId(room.getId(), LocalDate.now())
+                .isEmpty();
+    }
+
+    public List<Room> getAvailableRooms() {
+        return roomManager.getAllRooms().stream()
+                .filter(r -> !r.isUnderMaintenance())
+                .filter(this::isRoomFreeNow)
+                .toList();
+    }
+
+    public long countAvailableRooms() {
+        return getAvailableRooms().size();
+    }
+
+    public List<Service> getServicesByGuest(String guestName) {
+        Guest guest = guestManager.getGuestByName(guestName);
+
+        return bookingDAO.findByGuestId(guest.getId()).stream()
+                .flatMap(b -> b.getServices().stream())
+                .toList();
+    }
+
+    private Optional<Booking> findActiveBookingForGuest(String guestName) {
+        Guest guest = guestManager.getGuestByName(guestName);
+
+        return bookingDAO.findByGuestId(guest.getId()).stream()
+                .filter(b ->
+                        !b.getCheckOutDate().isBefore(LocalDate.now()) &&
+                                !b.getCheckInDate().isAfter(LocalDate.now())
+                )
+                .findFirst();
+    }
+
+    public List<Room> getRoomsFreeByDate(LocalDate date) {
+        return roomManager.getAllRooms().stream()
+                .filter(room ->
+                        bookingDAO.findAll().stream()
+                                .noneMatch(b ->
+                                        b.getRoom().equals(room)
+                                                && !b.getCheckOutDate().isBefore(date)
+                                )
+                )
+                .toList();
+    }
+
+    private void ensureNoBookingConflict(Booking booking) {
+        boolean conflict = bookingDAO.findAll().stream()
                 .filter(b -> b.getRoom() != null)
                 .anyMatch(b ->
                         b.getRoom().equals(booking.getRoom()) &&
@@ -72,6 +132,7 @@ public class BookingManager extends AbstractManager<Booking> {
                                         booking.getCheckInDate(), booking.getCheckOutDate()
                                 )
                 );
+
         if (conflict) {
             throw new BookingConflictException(
                     booking.getRoom().getNumber(),
@@ -79,28 +140,38 @@ public class BookingManager extends AbstractManager<Booking> {
                     booking.getCheckOutDate()
             );
         }
-        save(booking);
     }
 
-    public boolean isRoomFreeNow(Room room) {
-        LocalDate today = LocalDate.now();
-        return storage.values().stream()
-                .filter(b -> b.getRoom().equals(room))
-                .noneMatch(b ->
-                        !b.getCheckOutDate().isBefore(today) &&
-                                !b.getCheckInDate().isAfter(today)
-                );
+    public Booking addBooking(Booking booking) {
+        if (booking.getGuest() == null || booking.getRoom() == null) {
+            throw new BookingException("Booking must have guest and room.") {
+            };
+        }
+        try {
+            ensureNoBookingConflict(booking);
+            Booking saved = bookingDAO.save(booking);
+            connectionManager.commit();
+            return saved;
+        } catch (Exception e) {
+            connectionManager.rollback();
+            throw new BookingException("Failed to add booking", e);
+        }
     }
 
-    public List<Room> getAvailableRooms() {
-        return roomManager.getAll().stream()
-                .filter(r -> !r.isUnderMaintenance())
-                .filter(this::isRoomFreeNow)
-                .toList();
-    }
-
-    public long countAvailableRooms() {
-        return getAvailableRooms().size();
+    public void addBookingsBatch(List<Booking> bookings) {
+        try {
+            for (Booking booking : bookings) {
+                if (booking.getGuest() == null || booking.getRoom() == null) {
+                    throw new BookingException("Booking must have guest and room.");
+                }
+                ensureNoBookingConflict(booking);
+                bookingDAO.save(booking);
+            }
+            connectionManager.commit();
+        } catch (Exception e) {
+            connectionManager.rollback();
+            throw new BookingException("Failed to import bookings batch", e);
+        }
     }
 
     public void checkIn(String guestName,
@@ -127,51 +198,65 @@ public class BookingManager extends AbstractManager<Booking> {
 
     public void checkOut(int roomNumber) {
         LocalDate today = LocalDate.now();
+        try {
+            Booking booking = bookingDAO.findAll().stream()
+                    .filter(b -> b.getRoom().getNumber() == roomNumber)
+                    .filter(b ->
+                            !b.getCheckOutDate().isBefore(today) &&
+                                    !b.getCheckInDate().isAfter(today)
+                    )
+                    .findFirst()
+                    .orElseThrow(() ->
+                            new BookingNotFoundException(
+                                    "No active booking for room " + roomNumber
+                            )
+                    );
 
-        Booking booking = storage.values().stream()
-                .filter(b -> b.getRoom().getNumber() == roomNumber)
-                .filter(b ->
-                        !b.getCheckOutDate().isBefore(today) &&
-                                !b.getCheckInDate().isAfter(today)
-                )
-                .findFirst()
-                .orElseThrow(() ->
-                        new BookingNotFoundException(
-                                "No active booking for room " + roomNumber
-                        )
-                );
+            booking.forceCheckOut(today);
+            bookingDAO.update(booking);
 
-        booking.getRoom().addStayRecord(
-                booking.getGuest().getName(),
-                booking.getCheckInDate(),
-                today,
-                config.getRoomHistorySize()
-        );
+            booking.getRoom().addStayRecord(
+                    booking.getGuest().getName(),
+                    booking.getCheckInDate(),
+                    today,
+                    config.getRoomHistorySize()
+            );
 
-        booking.forceCheckOut(today);
+            connectionManager.commit();
+        } catch (Exception e) {
+            connectionManager.rollback();
+            throw new BookingException("Failed to check out", e);
+        }
     }
 
     public void assignServiceToGuest(String guestName,
                                      String serviceName,
                                      LocalDate date) {
-        Booking booking = findActiveBookingForGuest(guestName)
-                .orElseThrow(() -> new NoActiveBookingException(guestName));
+        try {
+            Booking booking = findActiveBookingForGuest(guestName)
+                    .orElseThrow(() -> new NoActiveBookingException(guestName));
 
-        Service baseService = serviceManager.getServiceByName(serviceName);
+            Service baseService = serviceManager.getServiceByName(serviceName);
 
-        Service datedService = new Service(
-                baseService.getName(),
-                baseService.getPrice(),
-                date
-        );
+            Service datedService = new Service(
+                    baseService.getName(),
+                    baseService.getPrice(),
+                    date
+            );
 
-        serviceManager.save(datedService);
-        booking.addService(datedService);
+            serviceManager.addService(datedService);
+            bookingDAO.addServiceToBooking(booking.getId(), datedService.getId());
+
+            connectionManager.commit();
+        } catch (Exception e) {
+            connectionManager.rollback();
+            throw new BookingException("Failed to assign service to guest", e);
+        }
     }
 
     public double calculateGuestRoomCost(String guestName) {
         Guest guest = guestManager.getGuestByName(guestName);
-        return storage.values().stream()
+        return bookingDAO.findAll().stream()
                 .filter(b -> b.getGuest().equals(guest))
                 .mapToDouble(Booking::calculateTotalRoomCost)
                 .sum();
@@ -179,59 +264,20 @@ public class BookingManager extends AbstractManager<Booking> {
 
     public double calculateGuestServicesCost(String guestName) {
         Guest guest = guestManager.getGuestByName(guestName);
-        return storage.values().stream()
+        return bookingDAO.findAll().stream()
                 .filter(b -> b.getGuest().equals(guest))
                 .mapToDouble(Booking::calculateTotalServicesCost)
                 .sum();
     }
 
     public double calculateGuestTotalCost(String guestName) {
-        return calculateGuestRoomCost(guestName) + calculateGuestServicesCost(guestName);
-    }
-
-    public List<Service> getServicesByGuest(String guestName) {
-        Guest guest = guestManager.getGuestByName(guestName);
-        return storage.values().stream()
-                .filter(b -> b.getGuest().equals(guest))
-                .flatMap(b -> b.getServices().stream())
-                .toList();
-    }
-
-    private Optional<Booking> findActiveBookingForGuest(String guestName) {
-        Guest guest = guestManager.getGuestByName(guestName);
-        return getActiveBookings().stream()
-                .filter(b -> b.getGuest().equals(guest))
-                .findFirst();
-    }
-
-    public List<Room> getRoomsFreeByDate(LocalDate date) {
-        return roomManager.getAll().stream()
-                .filter(room -> storage.values().stream()
-                        .noneMatch(b -> b.getRoom().equals(room)
-                                && !b.getCheckOutDate().isBefore(date)))
-                .toList();
-    }
-
-    public void updateRoomHistoryFromBookings() {
-        int maxHistorySize = config.getRoomHistorySize();
-
-        roomManager.getAll().forEach(r -> r.getStayHistory().clear());
-
-        storage.values().stream()
-                .filter(b -> b.getRoom() != null && b.getGuest() != null)
-                .filter(b -> !b.getCheckOutDate().isAfter(LocalDate.now()))
-                .sorted(Comparator.comparing(Booking::getCheckOutDate).reversed())
-                .forEach(b -> b.getRoom().addStayRecord(
-                        b.getGuest().getName(),
-                        b.getCheckInDate(),
-                        b.getCheckOutDate(),
-                        maxHistorySize
-                ));
+        return calculateGuestRoomCost(guestName)
+                + calculateGuestServicesCost(guestName);
     }
 
     public void exportBookingToCSV(String path) {
         if (path == null || path.isBlank()) {
-            throw new GuestCsvException("CSV export path cannot be empty.");
+            throw new BookingCsvException("CSV export path cannot be empty.");
         }
 
         File file = new File(path);
@@ -240,7 +286,7 @@ public class BookingManager extends AbstractManager<Booking> {
             file = new File(file, "bookings.csv");
         } else {
             if (!file.getName().toLowerCase().endsWith(".csv")) {
-                throw new GuestCsvException(
+                throw new BookingCsvException(
                         "Invalid file format. CSV file expected: " + file.getName()
                 );
             }
@@ -248,8 +294,8 @@ public class BookingManager extends AbstractManager<Booking> {
 
         try (PrintWriter writer = new PrintWriter(file)) {
             writer.println("id;guestId;roomId;checkIn;checkOut;serviceIds");
-            storage.values().forEach(b -> writer.println(b.toCsv()));
-        } catch (Exception e) {
+            bookingDAO.findAll().forEach(g -> writer.println(g.toCsv()));
+        } catch (IOException | DAOException e) {
             throw new BookingCsvException("Failed to export bookings: " + e.getMessage());
         }
     }
@@ -257,30 +303,45 @@ public class BookingManager extends AbstractManager<Booking> {
     public void importBookingFromCSV(String path) {
         try (BufferedReader br = new BufferedReader(new FileReader(path))) {
             br.readLine();
+            List<Booking> bookings = new ArrayList<>();
+
             String line;
             while ((line = br.readLine()) != null) {
-                Booking importedBooking = Booking.fromCsv(line);
-                save(importedBooking);
+                bookings.add(Booking.fromCsv(line));
             }
+
+            addBookingsBatch(bookings);
+
             resolveRelationsForAll();
             updateRoomHistoryFromBookings();
+
         } catch (Exception e) {
             throw new BookingCsvException("Failed to import bookings: " + e.getMessage());
         }
     }
 
-    public List<Booking> exportStateForAppState() {
-        return exportState();
-    }
+    public void updateRoomHistoryFromBookings() {
+        int maxHistorySize = config.getRoomHistorySize();
 
-    public void importStateFromAppState(List<Booking> bookings) {
-        importState(bookings);
-        resolveRelationsForAll();
-        updateRoomHistoryFromBookings();
+        roomManager.getAllRooms()
+                .forEach(r -> r.getStayHistory().clear());
+
+        bookingDAO.findAll().stream()
+                .filter(b -> b.getRoom() != null && b.getGuest() != null)
+                .filter(b -> !b.getCheckOutDate().isAfter(LocalDate.now()))
+                .sorted(Comparator.comparing(Booking::getCheckOutDate).reversed())
+                .forEach(b ->
+                        b.getRoom().addStayRecord(
+                                b.getGuest().getName(),
+                                b.getCheckInDate(),
+                                b.getCheckOutDate(),
+                                maxHistorySize
+                        )
+                );
     }
 
     private void resolveRelationsForAll() {
-        storage.values().forEach(this::resolveRelationsForBooking);
+        bookingDAO.findAll().forEach(this::resolveRelationsForBooking);
     }
 
     private void resolveRelationsForBooking(Booking booking) {

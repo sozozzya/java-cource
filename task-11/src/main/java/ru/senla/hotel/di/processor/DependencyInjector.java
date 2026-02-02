@@ -101,6 +101,7 @@ public class DependencyInjector {
 
             return instance;
         } catch (Exception e) {
+            e.printStackTrace();
             throw new DIException("Failed to create bean: " + implClass, e);
         }
     }

@@ -10,13 +10,6 @@ public class Main {
         try {
             DIContext context = new DIContext();
 
-            Administrator admin = context.getBean(Administrator.class);
-
-            admin.loadAppState();
-            Runtime.getRuntime().addShutdownHook(
-                    new Thread(admin::saveAppState)
-            );
-
             context.getBean(MenuController.class).run();
 
         } catch (Exception e) {

@@ -2,11 +2,13 @@ package ru.senla.hotel.di.context;
 
 import ru.senla.hotel.autoconfig.processor.ConfigProcessor;
 import ru.senla.hotel.config.ApplicationConfig;
+import ru.senla.hotel.dao.jdbc.JdbcBookingDAO;
+import ru.senla.hotel.dao.jdbc.JdbcGuestDAO;
+import ru.senla.hotel.dao.jdbc.JdbcRoomDAO;
+import ru.senla.hotel.dao.jdbc.JdbcServiceDAO;
+import ru.senla.hotel.db.ConnectionManager;
 import ru.senla.hotel.di.processor.DependencyInjector;
 import ru.senla.hotel.management.*;
-import ru.senla.hotel.storage.AppStateLoader;
-import ru.senla.hotel.storage.AppStateSaver;
-import ru.senla.hotel.storage.FileAppStateRepository;
 import ru.senla.hotel.ui.actions.BackAction;
 import ru.senla.hotel.ui.actions.ExitAction;
 import ru.senla.hotel.ui.actions.bookings.*;
@@ -41,9 +43,12 @@ public class DIContext {
                 BookingManager.class,
                 ReportManager.class,
 
-                AppStateLoader.class,
-                AppStateSaver.class,
-                FileAppStateRepository.class,
+                JdbcRoomDAO.class,
+                JdbcGuestDAO.class,
+                JdbcServiceDAO.class,
+                JdbcBookingDAO.class,
+
+                ConnectionManager.class,
 
                 Builder.class,
                 ActionFactory.class,

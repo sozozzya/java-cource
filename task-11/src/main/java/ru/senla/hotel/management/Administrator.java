@@ -5,8 +5,6 @@ import ru.senla.hotel.di.annotation.Component;
 import ru.senla.hotel.di.annotation.Inject;
 import ru.senla.hotel.exception.room.RoomOccupiedException;
 import ru.senla.hotel.model.*;
-import ru.senla.hotel.storage.AppState;
-import ru.senla.hotel.storage.FileAppStateRepository;
 
 import java.time.LocalDate;
 
@@ -30,19 +28,16 @@ public class Administrator {
     @Inject
     private ReportManager reportManager;
 
-    @Inject
-    private FileAppStateRepository appStateRepository;
-
     public void addRoom(Room room) {
-        roomManager.save(room);
+        roomManager.addRoom(room);
     }
 
     public void addService(Service service) {
-        serviceManager.save(service);
+        serviceManager.addService(service);
     }
 
     public void addGuest(Guest guest) {
-        guestManager.save(guest);
+        guestManager.addGuest(guest);
     }
 
     public void setRoomMaintenance(int roomNumber, boolean status) {
@@ -181,25 +176,5 @@ public class Administrator {
 
     public boolean isRoomStatusChangeEnabled() {
         return config.isRoomStatusChangeEnabled();
-    }
-
-    public void loadAppState() {
-        AppState state = appStateRepository.load();
-
-        roomManager.importStateFromAppState(state.getRooms());
-        serviceManager.importStateFromAppState(state.getServices());
-        guestManager.importStateFromAppState(state.getGuests());
-        bookingManager.importStateFromAppState(state.getBookings());
-    }
-
-    public void saveAppState() {
-        AppState state = new AppState();
-
-        state.setRooms(roomManager.exportStateForAppState());
-        state.setGuests(guestManager.exportStateForAppState());
-        state.setServices(serviceManager.exportStateForAppState());
-        state.setBookings(bookingManager.exportStateForAppState());
-
-        appStateRepository.save(state);
     }
 }

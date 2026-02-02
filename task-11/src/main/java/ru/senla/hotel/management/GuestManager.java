@@ -1,19 +1,37 @@
 package ru.senla.hotel.management;
 
+import ru.senla.hotel.dao.GuestDAO;
+import ru.senla.hotel.dao.RoomDAO;
+import ru.senla.hotel.dao.jdbc.JdbcGuestDAO;
+import ru.senla.hotel.db.ConnectionManager;
 import ru.senla.hotel.di.annotation.Component;
+import ru.senla.hotel.di.annotation.Inject;
+import ru.senla.hotel.exception.DAOException;
 import ru.senla.hotel.exception.guest.*;
+import ru.senla.hotel.exception.room.RoomException;
 import ru.senla.hotel.model.Guest;
+import ru.senla.hotel.model.Room;
 
 import java.io.*;
+import java.sql.Connection;
+import java.sql.SQLException;
 import java.util.*;
 
 @Component
-public class GuestManager extends AbstractManager<Guest> {
+public class GuestManager {
+
+    @Inject
+    private GuestDAO guestDAO;
+
+    @Inject
+    private ConnectionManager connectionManager;
+
+    public Optional<Guest> findById(Long id) {
+        return Optional.ofNullable(guestDAO.findById(id));
+    }
 
     public Optional<Guest> findGuestByName(String name) {
-        return storage.values().stream()
-                .filter(g -> g.getName().equalsIgnoreCase(name))
-                .findFirst();
+        return guestDAO.findByName(name);
     }
 
     public Guest getGuestByName(String name) {
@@ -21,15 +39,40 @@ public class GuestManager extends AbstractManager<Guest> {
                 .orElseThrow(() -> new GuestNotFoundException(name));
     }
 
-    public void addGuest(Guest guest) {
-        boolean exists = storage.values().stream()
-                .anyMatch(g -> g.getName().equalsIgnoreCase(guest.getName()));
+    private void ensureGuestNotExists(Guest guest) {
+        guestDAO.findByName(guest.getName())
+                .ifPresent(g -> {
+                    throw new GuestAlreadyExistsException(guest.getName());
+                });
+    }
 
-        if (exists) {
-            throw new GuestAlreadyExistsException(guest.getName());
+    public Guest addGuest(Guest guest) {
+        try {
+            ensureGuestNotExists(guest);
+
+            Guest saved = guestDAO.save(guest);
+            connectionManager.commit();
+            return saved;
+
+        } catch (Exception e) {
+            connectionManager.rollback();
+            throw new GuestException("Failed to add guest", e);
         }
+    }
 
-        save(guest);
+    public void addGuestsBatch(List<Guest> guests) {
+        try {
+            for (Guest guest : guests) {
+                ensureGuestNotExists(guest);
+                guestDAO.save(guest);
+            }
+
+            connectionManager.commit();
+
+        } catch (Exception e) {
+            connectionManager.rollback();
+            throw new GuestException("Failed to import guests batch", e);
+        }
     }
 
     public void exportGuestToCSV(String path) {
@@ -51,8 +94,8 @@ public class GuestManager extends AbstractManager<Guest> {
 
         try (PrintWriter writer = new PrintWriter(file)) {
             writer.println("id;name");
-            storage.values().forEach(g -> writer.println(g.toCsv()));
-        } catch (Exception e) {
+            guestDAO.findAll().forEach(g -> writer.println(g.toCsv()));
+        } catch (IOException | DAOException e) {
             throw new GuestCsvException("Failed to export guests: " + e.getMessage());
         }
     }
@@ -60,21 +103,14 @@ public class GuestManager extends AbstractManager<Guest> {
     public void importGuestFromCSV(String path) {
         try (BufferedReader br = new BufferedReader(new FileReader(path))) {
             br.readLine();
+            List<Guest> guests = new ArrayList<>();
             String line;
             while ((line = br.readLine()) != null) {
-                Guest importedGuest = Guest.fromCsv(line);
-                addGuest(importedGuest);
+                guests.add(Guest.fromCsv(line));
             }
+            addGuestsBatch(guests);
         } catch (Exception e) {
             throw new GuestCsvException("Failed to import guests: " + e.getMessage());
         }
-    }
-
-    public List<Guest> exportStateForAppState() {
-        return exportState();
-    }
-
-    public void importStateFromAppState(List<Guest> guests) {
-        importState(guests);
     }
 }

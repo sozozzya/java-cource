@@ -22,7 +22,7 @@ public class ReportManager {
 
     public void printAllRooms(Comparator<Room> comparator) {
         System.out.println("===== ROOM LIST =====");
-        roomManager.getAll().stream().sorted(comparator).forEach(System.out::println);
+        roomManager.getAllRooms().stream().sorted(comparator).forEach(System.out::println);
     }
 
     public void printAvailableRooms(Comparator<Room> comparator) {
@@ -58,14 +58,14 @@ public class ReportManager {
 
     public void printAllServices() {
         System.out.println("===== SERVICE LIST =====");
-        serviceManager.getAll().forEach(System.out::println);
+        serviceManager.getAvailableServices().forEach(System.out::println);
     }
 
     public void printAllPrices() {
         System.out.println("===== PRICES =====");
 
         System.out.println("--- Rooms ---");
-        roomManager.getAll().stream()
+        roomManager.getAllRooms().stream()
                 .sorted(SortUtils.byRoomPrice())
                 .forEach(r -> System.out.println("Room " + r.getNumber() + ": " + r.getPricePerNight() + "₽"));
 

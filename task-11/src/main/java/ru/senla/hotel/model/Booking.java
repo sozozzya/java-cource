@@ -92,8 +92,16 @@ public class Booking implements Identifiable, Serializable {
         this.guestId = (guest != null ? guest.getId() : null);
     }
 
+    public void setGuestId(Long guestId) {
+        this.guestId = (guest != null ? guest.getId() : null);
+    }
+
     public void setRoom(Room room) {
         this.room = room;
+        this.roomId = (room != null ? room.getId() : null);
+    }
+
+    public void setRoomId(Long roomId) {
         this.roomId = (room != null ? room.getId() : null);
     }
 
