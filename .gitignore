@@ -15,6 +15,7 @@
 *.nar
 *.ear
 *.tar.gz
+*.env
 
 # JVM crash logs
 hs_err_pid*
