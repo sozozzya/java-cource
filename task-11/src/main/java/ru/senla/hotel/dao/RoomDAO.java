@@ -8,5 +8,4 @@ import java.util.Optional;
 public interface RoomDAO extends GenericDAO<Room, Long> {
 
     Optional<Room> findByNumber(int number) throws DAOException;
-
 }

@@ -7,13 +7,10 @@ import ru.senla.hotel.di.annotation.Component;
 import ru.senla.hotel.di.annotation.Inject;
 import ru.senla.hotel.exception.DAOException;
 import ru.senla.hotel.exception.FeatureDisabledException;
-import ru.senla.hotel.exception.guest.GuestCsvException;
 import ru.senla.hotel.exception.room.*;
 import ru.senla.hotel.model.Room;
 
 import java.io.*;
-import java.sql.Connection;
-import java.sql.SQLException;
 import java.util.*;
 
 @Component

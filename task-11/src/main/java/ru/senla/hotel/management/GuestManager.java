@@ -1,20 +1,14 @@
 package ru.senla.hotel.management;
 
 import ru.senla.hotel.dao.GuestDAO;
-import ru.senla.hotel.dao.RoomDAO;
-import ru.senla.hotel.dao.jdbc.JdbcGuestDAO;
 import ru.senla.hotel.db.ConnectionManager;
 import ru.senla.hotel.di.annotation.Component;
 import ru.senla.hotel.di.annotation.Inject;
 import ru.senla.hotel.exception.DAOException;
 import ru.senla.hotel.exception.guest.*;
-import ru.senla.hotel.exception.room.RoomException;
 import ru.senla.hotel.model.Guest;
-import ru.senla.hotel.model.Room;
 
 import java.io.*;
-import java.sql.Connection;
-import java.sql.SQLException;
 import java.util.*;
 
 @Component

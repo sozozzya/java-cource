@@ -51,7 +51,7 @@ public class ReportManager {
     }
 
     public void printRoomHistory(int roomNumber) {
-        System.out.println("Last 3 guests of room " + roomNumber + ":");
+        System.out.println("Recent guests of room " + roomNumber + ":");
         Room room = roomManager.getRoomByNumber(roomNumber);
         room.getStayHistory().forEach(System.out::println);
     }

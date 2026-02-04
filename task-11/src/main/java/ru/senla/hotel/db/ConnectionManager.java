@@ -2,6 +2,7 @@ package ru.senla.hotel.db;
 
 import ru.senla.hotel.config.ApplicationConfig;
 import ru.senla.hotel.di.annotation.Component;
+import ru.senla.hotel.di.annotation.Inject;
 import ru.senla.hotel.exception.DatabaseException;
 
 import java.sql.Connection;
@@ -11,11 +12,12 @@ import java.sql.SQLException;
 @Component
 public final class ConnectionManager {
 
-    private final ApplicationConfig config;
+    @Inject
+    private ApplicationConfig config;
+
     private Connection connection;
 
-    public ConnectionManager(ApplicationConfig config) {
-        this.config = config;
+    public ConnectionManager() {
     }
 
     public synchronized Connection getConnection() {

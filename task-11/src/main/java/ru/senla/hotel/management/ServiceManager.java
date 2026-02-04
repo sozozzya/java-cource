@@ -5,7 +5,6 @@ import ru.senla.hotel.db.ConnectionManager;
 import ru.senla.hotel.di.annotation.Component;
 import ru.senla.hotel.di.annotation.Inject;
 import ru.senla.hotel.exception.DAOException;
-import ru.senla.hotel.exception.guest.GuestCsvException;
 import ru.senla.hotel.exception.service.*;
 import ru.senla.hotel.model.Service;
 
