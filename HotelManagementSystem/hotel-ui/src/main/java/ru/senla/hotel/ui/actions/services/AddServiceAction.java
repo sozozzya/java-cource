@@ -1,0 +1,48 @@
+package ru.senla.hotel.ui.actions.services;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import ru.senla.hotel.di.annotation.Component;
+import ru.senla.hotel.di.annotation.Inject;
+import ru.senla.hotel.di.annotation.Scope;
+import ru.senla.hotel.service.exception.service.ServiceException;
+import ru.senla.hotel.service.Administrator;
+import ru.senla.hotel.model.Service;
+import ru.senla.hotel.ui.menu.IAction;
+import ru.senla.hotel.ui.util.ConsoleReader;
+
+@Component(scope = Scope.PROTOTYPE)
+public class AddServiceAction implements IAction {
+
+    @Inject
+    private Administrator admin;
+
+    @Inject
+    private ConsoleReader reader;
+
+    private static final Logger log = LoggerFactory.getLogger(AddServiceAction.class);
+
+    @Override
+    public void execute() {
+        log.info("User command started: ADD_SERVICE");
+
+        try {
+            System.out.print("Enter service name: ");
+            String name = reader.nextLine();
+
+            System.out.print("Enter price: ");
+            double price = reader.nextDouble();
+
+            admin.addService(new Service(name, price));
+
+            log.info("User command completed successfully: ADD_SERVICE, name={}", name);
+            System.out.println("Service successfully added.");
+        } catch (ServiceException e) {
+            log.error("User command failed: ADD_SERVICE", e);
+            System.out.println("Failed to add service: " + e.getMessage());
+        } catch (Exception e) {
+            log.error("User command failed due to invalid input: ADD_SERVICE", e);
+            System.out.println("Invalid input.");
+        }
+    }
+}
