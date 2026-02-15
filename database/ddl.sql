@@ -1,10 +1,10 @@
 CREATE TABLE guests (
-    id BIGINT PRIMARY KEY,
+    id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     name VARCHAR(100) NOT NULL
 );
 
 CREATE TABLE rooms (
-    id BIGINT PRIMARY KEY,
+    id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     number INT NOT NULL,
     capacity INT NOT NULL,
     stars INT NOT NULL,
@@ -13,14 +13,13 @@ CREATE TABLE rooms (
 );
 
 CREATE TABLE services (
-    id BIGINT PRIMARY KEY,
-    name VARCHAR(100) NOT NULL,
-    price NUMERIC(10,2) NOT NULL,
-    date DATE NOT NULL
+    id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    name VARCHAR(100) NOT NULL UNIQUE,
+    price NUMERIC(10,2) NOT NULL
 );
 
 CREATE TABLE bookings (
-    id BIGINT PRIMARY KEY,
+    id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     guest_id BIGINT NOT NULL,
     room_id BIGINT NOT NULL,
     check_in_date DATE NOT NULL,
@@ -34,10 +33,10 @@ CREATE TABLE bookings (
 );
 
 CREATE TABLE booking_services (
+    id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     booking_id BIGINT NOT NULL,
     service_id BIGINT NOT NULL,
-
-    PRIMARY KEY (booking_id, service_id),
+    date DATE NOT NULL,
 
     CONSTRAINT fk_bs_booking
         FOREIGN KEY (booking_id) REFERENCES bookings(id),
