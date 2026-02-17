@@ -9,13 +9,12 @@
     <version>1.0-SNAPSHOT</version>
     <packaging>pom</packaging>
     <modules>
-        <module>hotel-model</module>
-        <module>hotel-dao</module>
+        <module>hotel-domain</module>
+        <module>hotel-repository</module>
         <module>hotel-service</module>
-        <module>hotel-di</module>
         <module>hotel-config</module>
-        <module>hotel-ui</module>
-        <module>hotel-app</module>
+        <module>hotel-application</module>
+        <module>hotel-presentation</module>
     </modules>
 
     <dependencies>
