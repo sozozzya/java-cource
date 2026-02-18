@@ -1,0 +1,22 @@
+<persistence xmlns="https://jakarta.ee/xml/ns/persistence"
+             version="3.1">
+
+    <persistence-unit name="hotelPU">
+
+        <provider>org.hibernate.jpa.HibernatePersistenceProvider</provider>
+
+        <class>ru.senla.hotel.domain.model.Room</class>
+        <class>ru.senla.hotel.domain.model.HotelService</class>
+        <class>ru.senla.hotel.domain.model.Booking</class>
+        <class>ru.senla.hotel.domain.model.BookingService</class>
+        <class>ru.senla.hotel.domain.model.Guest</class>
+
+        <properties>
+            <property name="hibernate.dialect" value="org.hibernate.dialect.PostgreSQLDialect"/>
+            <property name="hibernate.show_sql" value="false"/>
+            <property name="hibernate.format_sql" value="false"/>
+            <property name="hibernate.hbm2ddl.auto" value="validate"/>
+        </properties>
+
+    </persistence-unit>
+</persistence>
