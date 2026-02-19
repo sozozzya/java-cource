@@ -1,9 +1,3 @@
-DELETE FROM booking_services;
-DELETE FROM bookings;
-DELETE FROM services;
-DELETE FROM rooms;
-DELETE FROM guests;
-
 INSERT INTO rooms (number, capacity, stars, price_per_night, is_under_maintenance) VALUES
 (101,1,3,2600,false),
 (102,2,4,4300,false),
