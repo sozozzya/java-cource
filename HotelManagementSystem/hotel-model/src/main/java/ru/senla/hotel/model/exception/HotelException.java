@@ -1,0 +1,11 @@
+package ru.senla.hotel.model.exception;
+
+public class HotelException extends RuntimeException {
+    public HotelException(String message) {
+        super(message);
+    }
+
+    public HotelException(String message, Throwable cause) {
+        super(message, cause);
+    }
+}
