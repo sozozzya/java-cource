@@ -70,6 +70,7 @@ public class ApplicationBootstrap {
                 RoomManager.class,
                 GuestManager.class,
                 ServiceManager.class,
+<<<<<<< HEAD
                 BookingServiceManager.class,
                 BookingManager.class,
                 ReportManager.class,
@@ -79,6 +80,17 @@ public class ApplicationBootstrap {
                 JpaServiceDAO.class,
                 JpaBookingServiceDAO.class,
                 JpaBookingDAO.class,
+=======
+                BookingManager.class,
+                ReportManager.class,
+
+                JdbcRoomDAO.class,
+                JdbcGuestDAO.class,
+                JdbcServiceDAO.class,
+                JdbcBookingDAO.class,
+
+                ConnectionManager.class,
+>>>>>>> main
 
                 Builder.class,
                 ActionFactory.class,
