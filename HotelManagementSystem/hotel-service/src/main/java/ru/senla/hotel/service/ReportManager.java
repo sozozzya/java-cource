@@ -2,12 +2,15 @@ package ru.senla.hotel.service;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import ru.senla.hotel.ApplicationConfig;
+import ru.senla.hotel.dao.BookingDAO;
 import ru.senla.hotel.di.annotation.Component;
 import ru.senla.hotel.di.annotation.Inject;
 import ru.senla.hotel.model.Booking;
+import ru.senla.hotel.model.BookingService;
 import ru.senla.hotel.model.Room;
-import ru.senla.hotel.model.Service;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.Comparator;
 
@@ -21,6 +24,15 @@ public class ReportManager {
 
     @Inject
     private ServiceManager serviceManager;
+
+    @Inject
+    private BookingServiceManager bookingServiceManager;
+
+    @Inject
+    private BookingDAO bookingDAO;
+
+    @Inject
+    private ApplicationConfig config;
 
     private static final Logger log = LoggerFactory.getLogger(ReportManager.class);
 
@@ -69,7 +81,8 @@ public class ReportManager {
         Room room = roomManager.getRoomByNumber(roomNumber);
         System.out.println(room);
         System.out.println("Recent guests:");
-        room.getStayHistory().forEach(System.out::println);
+        bookingManager.getRoomHistory(roomNumber)
+                .forEach(System.out::println);
 
         log.info("Room details printed successfully, roomNumber={}", roomNumber);
     }
@@ -78,8 +91,8 @@ public class ReportManager {
         log.info("Printing room history, roomNumber={}", roomNumber);
 
         System.out.println("Recent guests of room " + roomNumber + ":");
-        Room room = roomManager.getRoomByNumber(roomNumber);
-        room.getStayHistory().forEach(System.out::println);
+        bookingManager.getRoomHistory(roomNumber)
+                .forEach(System.out::println);
 
         log.info("Room history printed successfully, roomNumber={}", roomNumber);
     }
@@ -104,8 +117,7 @@ public class ReportManager {
                 .forEach(r -> System.out.println("Room " + r.getNumber() + ": " + r.getPricePerNight() + "₽"));
 
         System.out.println("\n--- Services ---");
-        serviceManager.getAvailableServices().stream()
-                .sorted(SortUtils.byServicePrice())
+        serviceManager.getAvailableServices()
                 .forEach(s -> System.out.println(s.getName() + ": " + s.getPrice() + "₽"));
 
         log.info("All prices printed successfully");
@@ -137,9 +149,9 @@ public class ReportManager {
     public void printGuestBill(String guestName) {
         log.info("Printing bill for guest='{}'", guestName);
 
-        double roomCost = bookingManager.calculateGuestRoomCost(guestName);
-        double serviceCost = bookingManager.calculateGuestServicesCost(guestName);
-        double total = bookingManager.calculateGuestTotalCost(guestName);
+        BigDecimal roomCost = bookingManager.calculateGuestRoomCost(guestName);
+        BigDecimal serviceCost = bookingManager.calculateGuestServicesCost(guestName);
+        BigDecimal total = bookingManager.calculateGuestTotalCost(guestName);
 
         System.out.println("===== BILL FOR " + guestName + " =====");
         System.out.println("Room cost: " + roomCost + "₽");
@@ -149,11 +161,11 @@ public class ReportManager {
         log.info("Bill printed successfully for guest='{}'", guestName);
     }
 
-    public void printGuestServices(String guestName, Comparator<Service> comparator) {
+    public void printGuestServices(String guestName, Comparator<BookingService> comparator) {
         log.info("Printing services for guest='{}'", guestName);
 
         System.out.println("===== SERVICES USED BY " + guestName + " =====");
-        bookingManager.getServicesByGuest(guestName).stream()
+        bookingServiceManager.getServicesByGuest(guestName).stream()
                 .sorted(comparator)
                 .forEach(System.out::println);
 

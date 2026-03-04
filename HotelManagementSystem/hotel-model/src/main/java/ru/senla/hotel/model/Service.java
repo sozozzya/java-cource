@@ -1,35 +1,45 @@
 package ru.senla.hotel.model;
 
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Column;
+
 import java.io.Serial;
 import java.io.Serializable;
-import java.time.LocalDate;
+import java.math.BigDecimal;
 
+@Entity
+@Table(name = "services")
 public class Service implements Identifiable, Serializable {
 
     @Serial
     private static final long serialVersionUID = 1L;
 
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private final String name;
-    private double price;
-    private final LocalDate date;
+    @Column(nullable = false, unique = true)
+    private String name;
 
-    public Service(String name, double price, LocalDate date) {
-        this.name = name;
-        this.price = price;
-        this.date = date;
+    @Column(nullable = false, precision = 10, scale = 2)
+    private BigDecimal price;
+
+    protected Service() {
     }
 
-    public Service(Long id, String name, double price, LocalDate date) {
+    public Service(String name, BigDecimal price) {
+        this.name = name;
+        this.price = price;
+    }
+
+    public Service(Long id, String name, BigDecimal price) {
         this.id = id;
         this.name = name;
         this.price = price;
-        this.date = date;
-    }
-
-    public Service(String name, double price) {
-        this(null, name, price, LocalDate.now());
     }
 
     @Override
@@ -46,20 +56,20 @@ public class Service implements Identifiable, Serializable {
         return name;
     }
 
-    public double getPrice() {
+    public BigDecimal getPrice() {
         return price;
     }
 
-    public LocalDate getDate() {
-        return date;
+    public void setName(String name) {
+        this.name = name;
     }
 
-    public void setPrice(double price) {
+    public void setPrice(BigDecimal price) {
         this.price = price;
     }
 
     public String toCsv() {
-        return id + ";" + name + ";" + price + ";" + date;
+        return id + ";" + name + ";" + price;
     }
 
     public static Service fromCsv(String csv) {
@@ -67,15 +77,14 @@ public class Service implements Identifiable, Serializable {
         return new Service(
                 Long.parseLong(p[0]),
                 p[1],
-                Double.parseDouble(p[2]),
-                LocalDate.parse(p[3])
+                new BigDecimal(p[2])
         );
     }
 
     @Override
     public String toString() {
-        return "Service ID=" + id + ": " + name +
-                " | Price: " + price +
-                " | Date: " + date;
+        return "Service ID=" + id +
+                " | " + name +
+                " | Price: " + price;
     }
 }

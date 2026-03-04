@@ -11,6 +11,8 @@ import ru.senla.hotel.model.Service;
 import ru.senla.hotel.ui.menu.IAction;
 import ru.senla.hotel.ui.util.ConsoleReader;
 
+import java.math.BigDecimal;
+
 @Component(scope = Scope.PROTOTYPE)
 public class AddServiceAction implements IAction {
 
@@ -31,7 +33,7 @@ public class AddServiceAction implements IAction {
             String name = reader.nextLine();
 
             System.out.print("Enter price: ");
-            double price = reader.nextDouble();
+            BigDecimal price = reader.nextBigDecimal();
 
             admin.addService(new Service(name, price));
 

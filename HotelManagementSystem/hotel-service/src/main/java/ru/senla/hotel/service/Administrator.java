@@ -6,8 +6,8 @@ import ru.senla.hotel.di.annotation.Inject;
 import ru.senla.hotel.model.Guest;
 import ru.senla.hotel.model.Room;
 import ru.senla.hotel.model.Service;
-import ru.senla.hotel.service.exception.room.RoomOccupiedException;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 
 @Component
@@ -28,6 +28,9 @@ public class Administrator {
     private BookingManager bookingManager;
 
     @Inject
+    private BookingServiceManager bookingServiceManager;
+
+    @Inject
     private ReportManager reportManager;
 
     public void addRoom(Room room) {
@@ -43,20 +46,14 @@ public class Administrator {
     }
 
     public void setRoomMaintenance(int roomNumber, boolean status) {
-        Room room = roomManager.getRoomByNumber(roomNumber);
-
-        if (!bookingManager.isRoomFreeNow(room)) {
-            throw new RoomOccupiedException(roomNumber);
-        }
-
-        roomManager.setRoomMaintenance(roomNumber, status);
+        roomManager.changeMaintenanceStatus(roomNumber, status);
     }
 
-    public void changeRoomPrice(int roomNumber, double newPrice) {
+    public void changeRoomPrice(int roomNumber, BigDecimal newPrice) {
         roomManager.changeRoomPrice(roomNumber, newPrice);
     }
 
-    public void changeServicePrice(String serviceName, double newPrice) {
+    public void changeServicePrice(String serviceName, BigDecimal newPrice) {
         serviceManager.changeServicePrice(serviceName, newPrice);
     }
 
@@ -69,7 +66,7 @@ public class Administrator {
     }
 
     public void assignServiceToGuest(String guestName, String serviceName, LocalDate date) {
-        bookingManager.assignServiceToGuest(guestName, serviceName, date);
+        bookingServiceManager.assignServiceToGuest(guestName, serviceName, date);
     }
 
     public void printAllRoomsByPrice() {

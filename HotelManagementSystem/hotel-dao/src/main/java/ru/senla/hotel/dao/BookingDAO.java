@@ -13,9 +13,15 @@ public interface BookingDAO extends GenericDAO<Booking, Long> {
 
     List<Booking> findByGuestId(Long guestId) throws DAOException;
 
+    List<Booking> findBookingsByRoomAndPeriod(Long roomId, LocalDate checkIn, LocalDate checkOut) throws DAOException;
+
+    List<Booking> findAllWithRelations() throws DAOException;
+
+    List<Booking> findCompletedByRoomId(Long roomId) throws DAOException;
+
     Optional<Booking> findActiveByRoomId(Long roomId, LocalDate date) throws DAOException;
 
-    void addServiceToBooking(Long bookingId, Long serviceId) throws DAOException;
+    Optional<Booking> findActiveByRoomNumber(int roomNumber, LocalDate date) throws DAOException;
 
-    List<Long> findServiceIdsByBooking(Long bookingId) throws DAOException;
+    boolean existsFutureBookings(Long roomId, LocalDate fromDate) throws DAOException;
 }

@@ -20,6 +20,12 @@
         </dependency>
         <dependency>
             <groupId>ru.senla.hotel</groupId>
+            <artifactId>hotel-config</artifactId>
+            <version>1.0-SNAPSHOT</version>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>ru.senla.hotel</groupId>
             <artifactId>hotel-ui</artifactId>
             <version>1.0-SNAPSHOT</version>
             <scope>compile</scope>

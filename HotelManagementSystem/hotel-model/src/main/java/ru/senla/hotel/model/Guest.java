@@ -1,15 +1,31 @@
 package ru.senla.hotel.model;
 
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Column;
+
 import java.io.Serial;
 import java.io.Serializable;
 
+@Entity
+@Table(name = "guests")
 public class Guest implements Identifiable, Serializable {
 
     @Serial
     private static final long serialVersionUID = 1L;
 
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    private final String name;
+
+    @Column(nullable = false)
+    private String name;
+
+    protected Guest() {
+    }
 
     public Guest(Long id, String name) {
         this.id = id;
@@ -28,6 +44,10 @@ public class Guest implements Identifiable, Serializable {
 
     public String getName() {
         return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
     }
 
     public String toCsv() {

@@ -1,27 +1,46 @@
 package ru.senla.hotel.model;
 
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Column;
+
 import java.io.Serial;
 import java.io.Serializable;
-import java.time.LocalDate;
-import java.util.ArrayDeque;
-import java.util.Deque;
+import java.math.BigDecimal;
 
+@Entity
+@Table(name = "rooms")
 public class Room implements Identifiable, Serializable {
 
     @Serial
     private static final long serialVersionUID = 1L;
 
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private final int number;
-    private final int capacity;
-    private final int stars;
-    private double pricePerNight;
+    @Column(nullable = false, unique = true)
+    private int number;
+
+    @Column(nullable = false)
+    private int capacity;
+
+    @Column(nullable = false)
+    private int stars;
+
+    @Column(name = "price_per_night", nullable = false, precision = 10, scale = 2)
+    private BigDecimal pricePerNight;
+
+    @Column(name = "is_under_maintenance", nullable = false)
     private boolean isUnderMaintenance;
 
-    private final Deque<StayRecord> stayHistory = new ArrayDeque<>();
+    protected Room() {
+    }
 
-    public Room(Long id, int number, int capacity, int stars, double pricePerNight) {
+    public Room(Long id, int number, int capacity, int stars, BigDecimal pricePerNight) {
         this.id = id;
         this.number = number;
         this.capacity = capacity;
@@ -51,7 +70,7 @@ public class Room implements Identifiable, Serializable {
         return stars;
     }
 
-    public double getPricePerNight() {
+    public BigDecimal getPricePerNight() {
         return pricePerNight;
     }
 
@@ -59,19 +78,7 @@ public class Room implements Identifiable, Serializable {
         return isUnderMaintenance;
     }
 
-    public Deque<StayRecord> getStayHistory() {
-        return stayHistory;
-    }
-
-    public void addStayRecord(String guestName, LocalDate checkIn, LocalDate checkOut, int maxHistorySize) {
-        stayHistory.addFirst(new StayRecord(guestName, checkIn, checkOut));
-
-        while (stayHistory.size() > maxHistorySize) {
-            stayHistory.removeLast();
-        }
-    }
-
-    public void setPricePerNight(double pricePerNight) {
+    public void setPricePerNight(BigDecimal pricePerNight) {
         this.pricePerNight = pricePerNight;
     }
 
@@ -95,7 +102,7 @@ public class Room implements Identifiable, Serializable {
         int number = Integer.parseInt(p[1]);
         int capacity = Integer.parseInt(p[2]);
         int stars = Integer.parseInt(p[3]);
-        double price = Double.parseDouble(p[4]);
+        BigDecimal price = new BigDecimal(p[4]);
         boolean maintenance = Boolean.parseBoolean(p[5]);
 
         Room room = new Room(id, number, capacity, stars, price);

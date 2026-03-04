@@ -2,6 +2,7 @@ package ru.senla.hotel.ui.util;
 
 import ru.senla.hotel.di.annotation.Component;
 
+import java.math.BigDecimal;
 import java.util.Scanner;
 
 @Component
@@ -22,12 +23,12 @@ public class ConsoleReader {
         }
     }
 
-    public double nextDouble() {
+    public BigDecimal nextBigDecimal() {
         while (true) {
             try {
-                return Double.parseDouble(nextLine());
+                return new BigDecimal(nextLine().replace(",", "."));
             } catch (NumberFormatException e) {
-                System.out.print("Please enter a valid number: ");
+                System.out.print("Please enter a valid decimal number: ");
             }
         }
     }

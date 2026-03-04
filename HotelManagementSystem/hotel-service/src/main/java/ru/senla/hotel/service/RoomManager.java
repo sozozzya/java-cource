@@ -3,25 +3,28 @@ package ru.senla.hotel.service;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ru.senla.hotel.ApplicationConfig;
+import ru.senla.hotel.dao.BookingDAO;
 import ru.senla.hotel.dao.RoomDAO;
-import ru.senla.hotel.db.ConnectionManager;
 import ru.senla.hotel.di.annotation.Component;
 import ru.senla.hotel.di.annotation.Inject;
 import ru.senla.hotel.dao.exception.DAOException;
 import ru.senla.hotel.service.exception.FeatureDisabledException;
 import ru.senla.hotel.model.Room;
+import ru.senla.hotel.service.exception.room.RoomNotFoundException;
 import ru.senla.hotel.service.exception.room.RoomException;
-import ru.senla.hotel.service.exception.room.InvalidRoomPriceException;
+import ru.senla.hotel.service.exception.room.RoomOccupiedException;
 import ru.senla.hotel.service.exception.room.RoomCsvException;
 import ru.senla.hotel.service.exception.room.RoomMaintenanceException;
 import ru.senla.hotel.service.exception.room.RoomAlreadyExistsException;
-import ru.senla.hotel.service.exception.room.RoomNotFoundException;
+import ru.senla.hotel.service.exception.room.InvalidRoomPriceException;
 
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.FileReader;
+import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -33,10 +36,10 @@ public class RoomManager {
     private RoomDAO roomDAO;
 
     @Inject
-    private ApplicationConfig config;
+    private BookingDAO bookingDAO;
 
     @Inject
-    private ConnectionManager connectionManager;
+    private ApplicationConfig config;
 
     private static final Logger log = LoggerFactory.getLogger(RoomManager.class);
 
@@ -68,14 +71,11 @@ public class RoomManager {
             ensureRoomNotExists(room);
             Room saved = roomDAO.save(room);
 
-            connectionManager.commit();
-
             log.info("Room successfully added: id={}, number={}",
                     saved.getId(), saved.getNumber());
 
             return saved;
         } catch (Exception e) {
-            connectionManager.rollback();
             log.error("Failed to add room: number={}", room.getNumber(), e);
             throw new RoomException("Failed to add room", e);
         }
@@ -90,21 +90,18 @@ public class RoomManager {
                 roomDAO.save(room);
             }
 
-            connectionManager.commit();
-
             log.info("Rooms batch successfully imported: size={}", rooms.size());
         } catch (Exception e) {
-            connectionManager.rollback();
             log.error("Failed to import rooms batch: size={}", rooms.size(), e);
             throw new RoomException("Failed to import rooms batch", e);
         }
     }
 
-    public void changeRoomPrice(int roomNumber, double newPrice) {
+    public void changeRoomPrice(int roomNumber, BigDecimal newPrice) {
         log.info("Start changing room price: roomNumber={}, newPrice={}",
                 roomNumber, newPrice);
 
-        if (newPrice < 0) {
+        if (newPrice.compareTo(BigDecimal.ZERO) < 0) {
             log.error("Invalid room price: {}", newPrice);
             throw new InvalidRoomPriceException(newPrice);
         }
@@ -114,23 +111,19 @@ public class RoomManager {
             room.setPricePerNight(newPrice);
 
             roomDAO.update(room);
-            connectionManager.commit();
-
             log.info("Room price successfully changed: roomNumber={}, newPrice={}",
                     roomNumber, newPrice);
         } catch (Exception e) {
-            connectionManager.rollback();
             log.error("Failed to change room price: roomNumber={}", roomNumber, e);
             throw new RoomException("Failed to change room price", e);
         }
     }
 
-    public void setRoomMaintenance(int roomNumber, boolean status) {
+    public void changeMaintenanceStatus(int roomNumber, boolean status) {
         log.info("Start changing room maintenance status: roomNumber={}, status={}",
                 roomNumber, status);
 
         if (!config.isRoomStatusChangeEnabled()) {
-            log.error("Room maintenance change disabled by configuration");
             throw new FeatureDisabledException("Changing room maintenance status is disabled by configuration.");
         }
 
@@ -146,15 +139,16 @@ public class RoomManager {
                 );
             }
 
+            if (status && bookingDAO.existsFutureBookings(room.getId(), LocalDate.now())) {
+                throw new RoomOccupiedException(roomNumber);
+            }
+
             room.setUnderMaintenance(status);
             roomDAO.update(room);
-
-            connectionManager.commit();
 
             log.info("Room maintenance status successfully changed: roomNumber={}, status={}",
                     roomNumber, status);
         } catch (Exception e) {
-            connectionManager.rollback();
             log.error("Failed to change room maintenance status: roomNumber={}", roomNumber, e);
             throw new RoomException("Failed to update room maintenance", e);
         }

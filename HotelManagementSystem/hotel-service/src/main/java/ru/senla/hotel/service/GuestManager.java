@@ -3,7 +3,6 @@ package ru.senla.hotel.service;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ru.senla.hotel.dao.GuestDAO;
-import ru.senla.hotel.db.ConnectionManager;
 import ru.senla.hotel.di.annotation.Component;
 import ru.senla.hotel.di.annotation.Inject;
 import ru.senla.hotel.dao.exception.DAOException;
@@ -27,9 +26,6 @@ public class GuestManager {
 
     @Inject
     private GuestDAO guestDAO;
-
-    @Inject
-    private ConnectionManager connectionManager;
 
     private static final Logger log = LoggerFactory.getLogger(GuestManager.class);
 
@@ -63,13 +59,11 @@ public class GuestManager {
             ensureGuestNotExists(guest);
 
             Guest saved = guestDAO.save(guest);
-            connectionManager.commit();
 
             log.info("Guest successfully added: id={}, name='{}'", saved.getId(), saved.getName());
 
             return saved;
         } catch (Exception e) {
-            connectionManager.rollback();
             log.error("Failed to add guest with name='{}'", guest.getName(), e);
             throw new GuestException("Failed to add guest", e);
         }
@@ -84,10 +78,8 @@ public class GuestManager {
                 guestDAO.save(guest);
             }
 
-            connectionManager.commit();
             log.info("Guests batch successfully imported, count={}", guests.size());
         } catch (Exception e) {
-            connectionManager.rollback();
             log.error("Failed to import guests batch", e);
             throw new GuestException("Failed to import guests batch", e);
         }

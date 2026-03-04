@@ -1,18 +1,19 @@
 package ru.senla.hotel;
 
 import ru.senla.hotel.autoconfig.processor.ConfigProcessor;
-import ru.senla.hotel.dao.jdbc.JdbcBookingDAO;
-import ru.senla.hotel.dao.jdbc.JdbcGuestDAO;
-import ru.senla.hotel.dao.jdbc.JdbcRoomDAO;
-import ru.senla.hotel.dao.jdbc.JdbcServiceDAO;
-import ru.senla.hotel.db.ConnectionManager;
+import ru.senla.hotel.dao.jpa.JpaBookingServiceDAO;
+import ru.senla.hotel.dao.jpa.JpaBookingDAO;
+import ru.senla.hotel.dao.jpa.JpaRoomDAO;
+import ru.senla.hotel.dao.jpa.JpaGuestDAO;
+import ru.senla.hotel.dao.jpa.JpaServiceDAO;
 import ru.senla.hotel.di.processor.DependencyInjector;
-import ru.senla.hotel.service.Administrator;
+import ru.senla.hotel.service.BookingServiceManager;
 import ru.senla.hotel.service.ServiceManager;
+import ru.senla.hotel.service.RoomManager;
 import ru.senla.hotel.service.BookingManager;
 import ru.senla.hotel.service.GuestManager;
+import ru.senla.hotel.service.Administrator;
 import ru.senla.hotel.service.ReportManager;
-import ru.senla.hotel.service.RoomManager;
 import ru.senla.hotel.ui.actions.BackAction;
 import ru.senla.hotel.ui.actions.ExitAction;
 import ru.senla.hotel.ui.actions.bookings.ShowAvailableRoomCountAction;
@@ -69,6 +70,17 @@ public class ApplicationBootstrap {
                 RoomManager.class,
                 GuestManager.class,
                 ServiceManager.class,
+<<<<<<< HEAD
+                BookingServiceManager.class,
+                BookingManager.class,
+                ReportManager.class,
+
+                JpaRoomDAO.class,
+                JpaGuestDAO.class,
+                JpaServiceDAO.class,
+                JpaBookingServiceDAO.class,
+                JpaBookingDAO.class,
+=======
                 BookingManager.class,
                 ReportManager.class,
 
@@ -78,6 +90,7 @@ public class ApplicationBootstrap {
                 JdbcBookingDAO.class,
 
                 ConnectionManager.class,
+>>>>>>> main
 
                 Builder.class,
                 ActionFactory.class,

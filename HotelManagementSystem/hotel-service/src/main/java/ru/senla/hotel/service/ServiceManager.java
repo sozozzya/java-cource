@@ -3,7 +3,6 @@ package ru.senla.hotel.service;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ru.senla.hotel.dao.ServiceDAO;
-import ru.senla.hotel.db.ConnectionManager;
 import ru.senla.hotel.di.annotation.Component;
 import ru.senla.hotel.di.annotation.Inject;
 import ru.senla.hotel.dao.exception.DAOException;
@@ -19,6 +18,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.FileReader;
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -28,9 +28,6 @@ public class ServiceManager {
 
     @Inject
     private ServiceDAO serviceDAO;
-
-    @Inject
-    private ConnectionManager connectionManager;
 
     private static final Logger log = LoggerFactory.getLogger(ServiceManager.class);
 
@@ -56,10 +53,14 @@ public class ServiceManager {
     }
 
     private void ensureServiceNotExists(Service service) {
-        serviceDAO.findByName(service.getName())
-                .ifPresent(s -> {
-                    throw new ServiceAlreadyExistsException(service.getName());
-                });
+        try {
+            serviceDAO.findByName(service.getName())
+                    .ifPresent(s -> {
+                        throw new ServiceAlreadyExistsException(service.getName());
+                    });
+        } catch (DAOException e) {
+            throw new ServiceException("Failed to validate service uniqueness", e);
+        }
     }
 
     public Service addService(Service service) {
@@ -69,12 +70,10 @@ public class ServiceManager {
             ensureServiceNotExists(service);
 
             Service saved = serviceDAO.save(service);
-            connectionManager.commit();
 
             log.info("Service successfully added: id={}, name='{}'", saved.getId(), saved.getName());
             return saved;
         } catch (Exception e) {
-            connectionManager.rollback();
             log.error("Failed to add service with name='{}'", service.getName(), e);
             throw new ServiceException("Failed to add service", e);
         }
@@ -89,19 +88,17 @@ public class ServiceManager {
                 serviceDAO.save(service);
             }
 
-            connectionManager.commit();
             log.info("Services batch successfully imported, count={}", services.size());
         } catch (Exception e) {
-            connectionManager.rollback();
             log.error("Failed to import services batch", e);
             throw new ServiceException("Failed to import services batch", e);
         }
     }
 
-    public void changeServicePrice(String serviceName, double newPrice) {
+    public void changeServicePrice(String serviceName, BigDecimal newPrice) {
         log.info("Changing service price: name='{}', newPrice={}", serviceName, newPrice);
 
-        if (newPrice < 0) {
+        if (newPrice.compareTo(BigDecimal.ZERO) < 0) {
             throw new InvalidServicePriceException(newPrice);
         }
 
@@ -110,12 +107,10 @@ public class ServiceManager {
             service.setPrice(newPrice);
 
             serviceDAO.update(service);
-            connectionManager.commit();
 
             log.info("Service price successfully changed: name='{}', price={}",
                     serviceName, newPrice);
         } catch (Exception e) {
-            connectionManager.rollback();
             log.error("Failed to change service price: name='{}'", serviceName, e);
             throw new ServiceException("Failed to change service price", e);
         }

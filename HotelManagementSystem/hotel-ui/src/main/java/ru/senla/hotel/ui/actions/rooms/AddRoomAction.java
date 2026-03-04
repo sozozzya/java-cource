@@ -11,6 +11,8 @@ import ru.senla.hotel.model.Room;
 import ru.senla.hotel.ui.menu.IAction;
 import ru.senla.hotel.ui.util.ConsoleReader;
 
+import java.math.BigDecimal;
+
 @Component(scope = Scope.PROTOTYPE)
 public class AddRoomAction implements IAction {
 
@@ -37,7 +39,7 @@ public class AddRoomAction implements IAction {
             int stars = reader.nextInt();
 
             System.out.print("Enter price per night: ");
-            double price = reader.nextDouble();
+            BigDecimal price = reader.nextBigDecimal();
 
             admin.addRoom(new Room(null, number, capacity, stars, price));
 
