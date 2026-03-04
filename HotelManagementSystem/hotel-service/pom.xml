@@ -19,19 +19,13 @@
     <dependencies>
         <dependency>
             <groupId>ru.senla.hotel</groupId>
-            <artifactId>hotel-dao</artifactId>
+            <artifactId>hotel-repository</artifactId>
             <version>1.0-SNAPSHOT</version>
             <scope>compile</scope>
         </dependency>
         <dependency>
             <groupId>ru.senla.hotel</groupId>
-            <artifactId>hotel-di</artifactId>
-            <version>1.0-SNAPSHOT</version>
-            <scope>compile</scope>
-        </dependency>
-        <dependency>
-            <groupId>ru.senla.hotel</groupId>
-            <artifactId>hotel-model</artifactId>
+            <artifactId>hotel-domain</artifactId>
             <version>1.0-SNAPSHOT</version>
             <scope>compile</scope>
         </dependency>
