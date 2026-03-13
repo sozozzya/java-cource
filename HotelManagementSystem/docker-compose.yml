@@ -1,0 +1,35 @@
+services:
+
+  db:
+    image: postgres:15
+    container_name: hotel_db
+    restart: always
+    environment:
+      POSTGRES_DB: hotel
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_ready -U postgres" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  app:
+    build: .
+    container_name: hotel_app
+    depends_on:
+      - db
+    ports:
+      - "9090:9090"
+    environment:
+      JDBC_URL: jdbc:postgresql://db:5432/hotel
+      JDBC_USER: postgres
+      JDBC_PASSWORD: postgres
+      JDBC_DRIVER: org.postgresql.Driver
+
+volumes:
+  postgres_data:
