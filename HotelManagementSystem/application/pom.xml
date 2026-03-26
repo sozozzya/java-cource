@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>ru.senla.hotel</groupId>
+        <artifactId>HotelManagementSystem</artifactId>
+        <version>1.0-SNAPSHOT</version>
+    </parent>
+
+    <artifactId>application</artifactId>
+
+
+    <properties>
+        <maven.compiler.source>23</maven.compiler.source>
+        <maven.compiler.target>23</maven.compiler.target>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    </properties>
+    <dependencies>
+        <dependency>
+            <groupId>ru.senla.hotel</groupId>
+            <artifactId>domain</artifactId>
+            <version>1.0-SNAPSHOT</version>
+            <scope>compile</scope>
+        </dependency>
+        <!-- Source: https://mvnrepository.com/artifact/jakarta.persistence/jakarta.persistence-api -->
+        <dependency>
+            <groupId>jakarta.persistence</groupId>
+            <artifactId>jakarta.persistence-api</artifactId>
+            <version>3.2.0</version>
+            <scope>compile</scope>
+        </dependency>
+        <!-- Source: https://mvnrepository.com/artifact/org.springframework.security/spring-security-web -->
+        <dependency>
+            <groupId>org.springframework.security</groupId>
+            <artifactId>spring-security-web</artifactId>
+            <version>7.0.4</version>
+            <scope>compile</scope>
+        </dependency>
+        <!-- Source: https://mvnrepository.com/artifact/org.springframework.security/spring-security-config -->
+        <dependency>
+            <groupId>org.springframework.security</groupId>
+            <artifactId>spring-security-config</artifactId>
+            <version>7.0.4</version>
+            <scope>compile</scope>
+        </dependency>
+        <!-- Source: https://mvnrepository.com/artifact/org.springframework.security/spring-security-crypto -->
+        <dependency>
+            <groupId>org.springframework.security</groupId>
+            <artifactId>spring-security-crypto</artifactId>
+            <version>7.0.4</version>
+            <scope>compile</scope>
+        </dependency>
+        <!-- Source: https://mvnrepository.com/artifact/org.springframework/spring-aop -->
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-aop</artifactId>
+            <version>7.0.6</version>
+            <scope>compile</scope>
+        </dependency>
+        <!-- Source: https://mvnrepository.com/artifact/org.aspectj/aspectjweaver -->
+        <dependency>
+            <groupId>org.aspectj</groupId>
+            <artifactId>aspectjweaver</artifactId>
+            <version>1.9.25.1</version>
+            <scope>runtime</scope>
+        </dependency>
+        <!-- Source: https://mvnrepository.com/artifact/io.jsonwebtoken/jjwt-api -->
+        <dependency>
+            <groupId>io.jsonwebtoken</groupId>
+            <artifactId>jjwt-api</artifactId>
+            <version>0.13.0</version>
+            <scope>compile</scope>
+        </dependency>
+        <!-- Source: https://mvnrepository.com/artifact/io.jsonwebtoken/jjwt-impl -->
+        <dependency>
+            <groupId>io.jsonwebtoken</groupId>
+            <artifactId>jjwt-impl</artifactId>
+            <version>0.13.0</version>
+            <scope>runtime</scope>
+        </dependency>
+        <!-- Source: https://mvnrepository.com/artifact/io.jsonwebtoken/jjwt-jackson -->
+        <dependency>
+            <groupId>io.jsonwebtoken</groupId>
+            <artifactId>jjwt-jackson</artifactId>
+            <version>0.13.0</version>
+            <scope>runtime</scope>
+        </dependency>
+        <dependency>
+            <groupId>ru.senla.hotel</groupId>
+            <artifactId>infrastructure</artifactId>
+            <version>1.0-SNAPSHOT</version>
+            <scope>compile</scope>
+        </dependency>
+    </dependencies>
+
+</project>
