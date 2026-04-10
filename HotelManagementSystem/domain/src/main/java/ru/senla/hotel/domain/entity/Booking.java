@@ -51,15 +51,17 @@ public class Booking implements Identifiable, Serializable {
     @OneToMany(mappedBy = "booking", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<BookingFavor> services = new ArrayList<>();
 
+    @Setter
     @Getter
     @Column(name = "check_in_date", nullable = false)
     private LocalDate checkInDate;
 
+    @Setter
     @Getter
     @Column(name = "check_out_date", nullable = false)
     private LocalDate checkOutDate;
 
-    protected Booking() {
+    public Booking() {
     }
 
     public Booking(Guest guest, Room room,

@@ -10,5 +10,6 @@ import lombok.Setter;
 public class GuestResponse {
 
     private Long id;
+
     private String name;
 }
