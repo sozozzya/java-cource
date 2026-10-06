@@ -4,6 +4,7 @@ import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -30,6 +31,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping(value = "/api/rooms", produces = MediaType.APPLICATION_JSON_VALUE)
+@PreAuthorize("hasAnyRole('USER','ADMIN')")
 public class RoomController {
 
     private final RoomService roomService;
@@ -91,6 +93,7 @@ public class RoomController {
     }
 
     @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE)
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<RoomResponse> createRoom(
             @Valid @RequestBody CreateRoomRequest request) {
 
@@ -104,6 +107,7 @@ public class RoomController {
     }
 
     @PatchMapping("/{roomNumber}/price")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Void> changePrice(
             @PathVariable("roomNumber") int roomNumber,
             @Valid @RequestBody ChangeRoomPriceRequest request) {
@@ -117,6 +121,7 @@ public class RoomController {
     }
 
     @PatchMapping("/{roomNumber}/maintenance")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Void> changeMaintenance(
             @PathVariable("roomNumber") int roomNumber,
             @Valid @RequestBody ChangeMaintenanceStatusRequest request) {
@@ -130,6 +135,7 @@ public class RoomController {
     }
 
     @PostMapping("/export")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Void> exportCSV(
             @Valid @RequestBody CsvPathRequest request) {
 
@@ -139,6 +145,7 @@ public class RoomController {
     }
 
     @PostMapping("/import")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Void> importCSV(
             @Valid @RequestBody CsvPathRequest request) {
 

@@ -4,6 +4,7 @@ import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -31,6 +32,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping(value = "/api/guests", produces = MediaType.APPLICATION_JSON_VALUE)
+@PreAuthorize("hasAnyRole('USER','ADMIN')")
 public class GuestController {
 
     private final GuestService guestService;
@@ -113,6 +115,7 @@ public class GuestController {
     }
 
     @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE)
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<GuestResponse> createGuest(
             @Valid @RequestBody CreateGuestRequest request) {
 
@@ -126,6 +129,7 @@ public class GuestController {
     }
 
     @PostMapping("/export")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Void> exportCSV(
             @Valid @RequestBody CsvPathRequest request) {
 
@@ -135,6 +139,7 @@ public class GuestController {
     }
 
     @PostMapping("/import")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Void> importCSV(
             @Valid @RequestBody CsvPathRequest request) {
 

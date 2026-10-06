@@ -6,6 +6,7 @@ import ru.senla.hotel.infrastructure.config.TransactionConfig;
 import ru.senla.hotel.infrastructure.config.JpaConfig;
 import ru.senla.hotel.infrastructure.config.ApplicationConfig;
 import ru.senla.hotel.infrastructure.config.DataSourceConfig;
+import ru.senla.hotel.presentation.security.config.SecurityConfig;
 
 public class WebAppInitializer
         extends AbstractAnnotationConfigDispatcherServletInitializer {
@@ -18,7 +19,8 @@ public class WebAppInitializer
                 DataSourceConfig.class,
                 JpaConfig.class,
                 TransactionConfig.class,
-                FlywayConfig.class
+                FlywayConfig.class,
+                SecurityConfig.class
         };
     }
 

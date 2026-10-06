@@ -1,15 +1,17 @@
 package ru.senla.hotel.infrastructure.config;
 
+import lombok.Getter;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.context.support.PropertySourcesPlaceholderConfigurer;
-import org.springframework.stereotype.Component;
 
+@Getter
 @Configuration
+@ComponentScan("ru.senla.hotel")
 @PropertySource("classpath:application.properties")
-@Component
 public class ApplicationConfig {
 
     @Bean
@@ -46,29 +48,5 @@ public class ApplicationConfig {
                     "Required property '" + property + "' is missing or blank");
         }
         return value;
-    }
-
-    public String getJdbcUrl() {
-        return jdbcUrl;
-    }
-
-    public String getJdbcUser() {
-        return jdbcUser;
-    }
-
-    public String getJdbcPassword() {
-        return jdbcPassword;
-    }
-
-    public String getJdbcDriver() {
-        return jdbcDriver;
-    }
-
-    public boolean isRoomStatusChangeEnabled() {
-        return roomStatusChangeEnabled;
-    }
-
-    public int getRoomHistorySize() {
-        return roomHistorySize;
     }
 }
