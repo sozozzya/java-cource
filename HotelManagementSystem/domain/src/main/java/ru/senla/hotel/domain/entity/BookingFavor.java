@@ -37,7 +37,7 @@ public class BookingFavor implements Serializable {
     @Column(nullable = false)
     private LocalDate date;
 
-    protected BookingFavor() {
+    public BookingFavor() {
     }
 
     public BookingFavor(Booking booking, Favor favor, LocalDate date) {
